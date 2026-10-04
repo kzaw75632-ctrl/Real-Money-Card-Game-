@@ -1,0 +1,2880 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07152b">
+<title>Stud Poker — Bilingual · v8.2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Padauk','Myanmar Text',Arial,sans-serif;background:#02060f;color:#fff;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+button,input,select{font:inherit;outline:none;border:0}
+
+@media (orientation: portrait){
+  .app{position:fixed;top:50%;left:50%;width:100vh;height:100vw;transform:translate(-50%,-50%) rotate(90deg);transform-origin:center;overflow:hidden}
+}
+.app{position:fixed;inset:0;overflow:hidden;background:radial-gradient(circle at 30% 40%,#123a6b 0%,#071a38 45%,#02060f 100%);display:flex;flex-direction:column}
+@media (orientation: portrait){ .app{position:fixed;inset:auto} }
+
+.bg-stage{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bg-stage .rays{position:absolute;top:-50%;left:50%;width:200%;height:200%;transform-origin:center;background:conic-gradient(from 0deg,transparent 0deg,rgba(96,165,250,.10) 8deg,transparent 20deg,transparent 50deg,rgba(168,85,247,.09) 60deg,transparent 75deg,transparent 170deg,rgba(34,211,238,.08) 185deg,transparent 200deg);animation:raysRot 60s linear infinite}
+@keyframes raysRot{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.bg-stage .sp{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff,0 0 24px #60a5fa;animation:tw 3s infinite}
+.bg-stage .sp:nth-child(2){top:15%;left:12%}
+.bg-stage .sp:nth-child(3){top:28%;left:78%;animation-delay:.6s}
+.bg-stage .sp:nth-child(4){top:72%;left:35%;animation-delay:1.2s}
+.bg-stage .sp:nth-child(5){top:58%;left:88%;animation-delay:1.8s}
+@keyframes tw{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:1;transform:scale(1.4)}}
+
+.header{position:relative;z-index:20;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;height:58px;background:linear-gradient(180deg,rgba(2,8,20,.85),rgba(2,8,20,.3));border-bottom:1px solid rgba(96,165,250,.18)}
+.brand{display:flex;align-items:center;gap:10px}
+.logo-badge{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,#ffd84d,#e58a00);display:grid;place-items:center;font-size:24px;box-shadow:0 4px 0 #713800,0 0 18px rgba(255,190,40,.5)}
+.brand-text b{display:block;font-size:17px;letter-spacing:1.2px}
+.brand-text small{font-size:10px;color:#8eb4e8;letter-spacing:.5px}
+.header-pills{display:flex;gap:8px;align-items:center}
+.hpill{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(46,77,125,.9),rgba(20,35,65,.9));border:1.5px solid #4a7bc8;border-radius:18px;padding:5px 12px;font-weight:800;font-size:12px;box-shadow:inset 0 1px rgba(255,255,255,.15)}
+.hpill .dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;animation:dp 1.5s infinite}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.4}}
+
+.screens{flex:1;position:relative;z-index:10;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;padding:10px 14px;overflow:hidden}
+.screen.active{display:flex}
+
+.home-wrap{flex:1;display:flex;align-items:center;justify-content:center}
+.home-card{width:min(680px,76vw);padding:22px;background:linear-gradient(160deg,rgba(5,20,45,.92),rgba(2,10,25,.96));border:2px solid rgba(96,165,250,.5);border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.7),inset 0 1px rgba(255,255,255,.12);backdrop-filter:blur(12px);text-align:center}
+.home-title{font-size:clamp(28px,4vw,48px);font-weight:1000;letter-spacing:3px;background:linear-gradient(180deg,#fff7a6,#ffc62e,#ff7b00);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 12px rgba(255,200,50,.5))}
+.home-sub{color:#a8c9ff;font-size:13px;margin-top:8px;margin-bottom:22px;line-height:1.5}
+.home-buttons{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.big-btn{padding:20px 18px;border-radius:18px;cursor:pointer;color:#fff;font-weight:900;font-size:15px;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform .08s,box-shadow .08s;letter-spacing:.5px}
+.big-btn .ico{font-size:34px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));animation:bif 3s infinite}
+@keyframes bif{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.big-btn.user{background:linear-gradient(180deg,#22c55e,#15803d);border:2px solid #86efac;box-shadow:0 8px 0 #0a2a1a,0 14px 28px rgba(34,197,94,.4),inset 0 3px 0 rgba(255,255,255,.3)}
+.big-btn.user:active{transform:translateY(4px);box-shadow:0 4px 0 #0a2a1a}
+.big-btn.admin{background:linear-gradient(180deg,#a855f7,#6b21a8);border:2px solid #d8b4fe;box-shadow:0 8px 0 #3b0764,0 14px 28px rgba(168,85,247,.4),inset 0 3px 0 rgba(255,255,255,.3)}
+.big-btn.admin:active{transform:translateY(4px);box-shadow:0 4px 0 #3b0764}
+.big-btn .sub{font-size:10px;opacity:.85;font-weight:400}
+.home-note{margin-top:16px;font-size:11px;color:#6b8fb5;line-height:1.6}
+
+.dash-layout{width:100%;height:100%;display:grid;grid-template-columns:1.55fr 1fr;gap:12px;min-height:0}
+.dash-main{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden}
+.user-strip{display:flex;align-items:center;gap:12px;padding:9px 14px;background:linear-gradient(135deg,rgba(5,20,45,.9),rgba(20,35,65,.9));border:1.5px solid #4a7bc8;border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.4),inset 0 1px rgba(255,255,255,.12);flex:0 0 auto}
+.u-avatar{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#a78bfa,#7c3aed 70%);border:2.5px solid #c4b5fd;display:grid;place-items:center;font-size:18px;font-weight:900;box-shadow:inset 0 -3px 6px rgba(0,0,0,.3),inset 0 3px 6px rgba(255,255,255,.4);flex-shrink:0}
+.u-info{flex:1;min-width:0}
+.u-info b{font-size:14px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.u-info small{color:#a8c9ff;font-size:10px;display:block;margin-top:2px}
+.u-coins{font-size:17px;font-weight:900;color:#ffd54a;text-shadow:0 0 12px rgba(255,213,74,.5);display:flex;align-items:center;gap:5px;flex-shrink:0}
+.u-coins .cicon{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ffe066,#b8860b);border:1.5px solid #ffd700;display:grid;place-items:center;font-size:11px;color:#7c5500;font-weight:900}
+.zero-warn{background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(153,27,27,.2));border:1.5px solid #ef4444;border-radius:10px;padding:6px 12px;text-align:center;color:#fca5a5;font-weight:900;font-size:10px;line-height:1.5;display:none}
+.zero-warn.show{display:block;animation:zw 1.6s infinite}
+@keyframes zw{0%,100%{opacity:1}50%{opacity:.75}}
+
+.main-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;flex:0 0 auto}
+.main-action{padding:12px 8px;border-radius:14px;cursor:pointer;font-family:inherit;color:#fff;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;transition:transform .08s,box-shadow .08s;border:2px solid;position:relative;overflow:hidden;min-height:88px;justify-content:center}
+.main-action:active{ transform:translateY(3px); }
+.main-action .ma-ico{ font-size:30px; line-height:1; filter:drop-shadow(0 3px 6px rgba(0,0,0,.5)); animation:bif 3s infinite; }
+.main-action .ma-txt{ display:flex; flex-direction:column; gap:2px; }
+.main-action .ma-txt b{ font-size:11.5px; font-weight:1000; letter-spacing:.2px; line-height:1.2; }
+.main-action .ma-txt small{ font-size:8.5px; opacity:.82; font-weight:700; line-height:1.25; }
+.main-action.play-real { background:linear-gradient(160deg,#16a34a,#14532d); border-color:#86efac; box-shadow:0 5px 0 #0a2a1a,0 10px 22px rgba(22,163,74,.4),inset 0 2px 0 rgba(255,255,255,.25); }
+.main-action.play-real:active { box-shadow:0 2px 0 #0a2a1a; }
+.main-action.find-players { background:linear-gradient(160deg,#2563eb,#1e3a8a); border-color:#93c5fd; box-shadow:0 5px 0 #0a1e4a,0 10px 22px rgba(37,99,235,.4),inset 0 2px 0 rgba(255,255,255,.25); }
+.main-action.find-players:active { box-shadow:0 2px 0 #0a1e4a; }
+.main-action.find-players .ma-ico { animation-delay: .4s; }
+.main-action.demo-play { background:linear-gradient(160deg,#fbbf24,#b45309); border-color:#fde68a; color:#1a1204; box-shadow:0 5px 0 #5a2d04,0 10px 22px rgba(251,191,36,.4),inset 0 2px 0 rgba(255,255,255,.4); }
+.main-action.demo-play:active { box-shadow:0 2px 0 #5a2d04; }
+.main-action.demo-play .ma-txt small { color:#1a1204; opacity:.75; }
+.main-action.demo-play .ma-ico { animation-delay: .8s; }
+
+.btn-grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);gap:7px;min-height:0;overflow:hidden}
+.grid-btn{border-radius:13px;cursor:pointer;color:#fff;font-family:inherit;font-weight:900;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px;min-height:0;transition:transform .08s,box-shadow .08s;letter-spacing:.2px;position:relative;overflow:hidden}
+.grid-btn .g-ico{font-size:20px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+.grid-btn .g-label{font-size:10.5px;text-align:center;line-height:1.15}
+.grid-btn .g-sub{font-size:8.5px;color:rgba(255,255,255,.7);text-align:center;line-height:1.1}
+.grid-btn:active{transform:translateY(3px)}
+.grid-btn.blue{background:linear-gradient(160deg,#2563eb,#1e3a8a);border:2px solid #93c5fd;box-shadow:0 4px 0 #0a1e4a,0 8px 16px rgba(37,99,235,.4),inset 0 2px 0 rgba(255,255,255,.25)}
+.grid-btn.blue:active{box-shadow:0 2px 0 #0a1e4a}
+.grid-btn.green{background:linear-gradient(160deg,#16a34a,#14532d);border:2px solid #86efac;box-shadow:0 4px 0 #0a2a1a,0 8px 16px rgba(22,163,74,.4),inset 0 2px 0 rgba(255,255,255,.25)}
+.grid-btn.green:active{box-shadow:0 2px 0 #0a2a1a}
+.grid-btn.gold{background:linear-gradient(160deg,#fbbf24,#b45309);border:2px solid #fde68a;color:#1a1204;box-shadow:0 4px 0 #5a2d04,0 8px 16px rgba(251,191,36,.4),inset 0 2px 0 rgba(255,255,255,.4)}
+.grid-btn.gold:active{box-shadow:0 2px 0 #5a2d04}
+.grid-btn.gold .g-label,.grid-btn.gold .g-sub{color:#1a1204}
+.grid-btn.purple{background:linear-gradient(160deg,#a855f7,#6b21a8);border:2px solid #d8b4fe;box-shadow:0 4px 0 #3b0764,0 8px 16px rgba(168,85,247,.4),inset 0 2px 0 rgba(255,255,255,.25)}
+.grid-btn.purple:active{box-shadow:0 2px 0 #3b0764}
+.grid-btn.cyan{background:linear-gradient(160deg,#06b6d4,#0e7490);border:2px solid #67e8f9;box-shadow:0 4px 0 #0a3a44,0 8px 16px rgba(6,182,212,.4),inset 0 2px 0 rgba(255,255,255,.25)}
+.grid-btn.cyan:active{box-shadow:0 2px 0 #0a3a44}
+.grid-btn.red{background:linear-gradient(160deg,#dc2626,#7f1d1d);border:2px solid #fca5a5;box-shadow:0 4px 0 #3f0c0c,0 8px 16px rgba(220,38,38,.4),inset 0 2px 0 rgba(255,255,255,.25)}
+.grid-btn.red:active{box-shadow:0 2px 0 #3f0c0c}
+.grid-btn.teal{background:linear-gradient(160deg,#14b8a6,#115e59);border:2px solid #5eead4;box-shadow:0 4px 0 #052e2b,0 8px 16px rgba(20,184,166,.4),inset 0 2px 0 rgba(255,255,255,.25)}
+.grid-btn.teal:active{box-shadow:0 2px 0 #052e2b}
+
+.dash-side{display:flex;flex-direction:column;gap:8px;padding:11px;background:linear-gradient(160deg,rgba(5,20,45,.92),rgba(2,10,25,.96));border:1.5px solid #4a7bc8;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.4);overflow:hidden;min-height:0}
+.side-title{font-size:12px;font-weight:900;color:#ffd54a;display:flex;align-items:center;gap:6px;flex-shrink:0;padding-bottom:7px;border-bottom:1px solid rgba(74,123,200,.4)}
+.table-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px;padding-right:4px;min-height:0}
+.table-scroll::-webkit-scrollbar{width:4px}
+.table-scroll::-webkit-scrollbar-thumb{background:#4a7bc8;border-radius:2px}
+.quick-stat{display:flex;align-items:center;gap:9px;padding:8px 10px;background:linear-gradient(135deg,rgba(20,60,115,.9),rgba(8,26,56,.95));border:1.5px solid #4d8fe5;border-radius:10px;flex-shrink:0}
+.quick-stat .qs-ico{font-size:20px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+.quick-stat .qs-txt{flex:1;min-width:0}
+.quick-stat .qs-txt small{display:block;font-size:9.5px;color:#a8c9ff;font-weight:700}
+.quick-stat .qs-txt b{display:block;font-size:13px;color:#fff;font-weight:1000;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.quick-stat .qs-val{font-size:14px;font-weight:1000;color:#ffd54a;text-shadow:0 0 8px rgba(255,213,74,.5)}
+
+.modal{position:fixed;inset:0;z-index:200;background:radial-gradient(circle at center,rgba(5,15,35,.9),rgba(0,0,0,.96));display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(8px)}
+.modal.active{display:flex}
+.modal-box{width:min(520px,88vw);max-height:88vh;overflow-y:auto;background:linear-gradient(160deg,#1a3a5f,#0a1e38);border:2.5px solid #4a7bc8;border-radius:20px;padding:20px;box-shadow:0 24px 70px rgba(0,0,0,.85),inset 0 1px rgba(255,255,255,.15);animation:mi .35s cubic-bezier(.34,1.56,.64,1);position:relative}
+@keyframes mi{0%{transform:scale(.7) rotateX(-15deg);opacity:0}100%{transform:scale(1) rotateX(0);opacity:1}}
+.modal-box::-webkit-scrollbar{width:5px}
+.modal-box::-webkit-scrollbar-thumb{background:#4a7bc8;border-radius:3px}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(74,123,200,.4);position:sticky;top:-20px;background:linear-gradient(160deg,#1a3a5f,#0a1e38);z-index:10;padding-top:6px;margin-top:-6px}
+.modal-title{font-size:15px;font-weight:900;color:#ffd54a;display:flex;align-items:center;gap:8px;line-height:1.3}
+.modal-title .bi-en{font-size:11px;color:#a8c9ff;font-weight:700;display:block}
+.modal-close{width:32px;height:32px;border-radius:50%;background:linear-gradient(180deg,#ef4444,#7f1d1d);border:2px solid #fca5a5;color:#fff;font-size:16px;font-weight:900;cursor:pointer;display:grid;place-items:center;box-shadow:0 3px 0 #3f0c0c}
+.modal-close:active{transform:translateY(2px);box-shadow:0 1px 0 #3f0c0c}
+
+.bi{display:flex;flex-direction:column;line-height:1.15}
+.bi .bi-my{font-weight:900;font-size:13px;color:#fff}
+.bi .bi-en{font-size:10px;color:#a8c9ff;font-weight:700;margin-top:1px}
+.label-bi{display:flex;flex-direction:column;margin-bottom:5px}
+.label-bi .bi-my{font-size:12px;font-weight:900;color:#a7f3d0}
+.label-bi .bi-en{font-size:10px;color:#6b8fb5;font-weight:700}
+
+.form-group{margin-bottom:12px}
+.form-input{width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid #4a7bc8;background:linear-gradient(160deg,rgba(0,0,0,.35),rgba(20,40,70,.35));color:#fff;font-size:13px;font-family:inherit;box-shadow:inset 0 2px 6px rgba(0,0,0,.45);transition:border-color .15s}
+.form-input:focus{border-color:#ffd54a;box-shadow:inset 0 2px 6px rgba(0,0,0,.45),0 0 0 3px rgba(255,213,74,.2)}
+.form-input.mono{font-family:'Courier New',monospace;letter-spacing:2px;text-align:center;font-size:16px}
+
+.form-btn{width:100%;padding:12px;border-radius:11px;font-family:inherit;font-size:13px;font-weight:900;color:#fff;cursor:pointer;letter-spacing:.5px;transition:transform .08s,box-shadow .08s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.form-btn .bi-en{font-size:10px;opacity:.85}
+.form-btn:active{transform:translateY(3px)}
+.form-btn.green{background:linear-gradient(180deg,#22c55e,#15803d);border:2px solid #86efac;box-shadow:0 5px 0 #0a2a1a,inset 0 2px 0 rgba(255,255,255,.25)}
+.form-btn.green:active{box-shadow:0 2px 0 #0a2a1a}
+.form-btn.blue{background:linear-gradient(180deg,#3b82f6,#1e3a8a);border:2px solid #93c5fd;box-shadow:0 5px 0 #0a1e4a,inset 0 2px 0 rgba(255,255,255,.25)}
+.form-btn.blue:active{box-shadow:0 2px 0 #0a1e4a}
+.form-btn.gold{background:linear-gradient(180deg,#fbbf24,#b45309);border:2px solid #fde68a;color:#1a1204;box-shadow:0 5px 0 #5a2d04,inset 0 2px 0 rgba(255,255,255,.4)}
+.form-btn.gold:active{box-shadow:0 2px 0 #5a2d04}
+.form-btn.red{background:linear-gradient(180deg,#ef4444,#7f1d1d);border:2px solid #fca5a5;box-shadow:0 5px 0 #3f0c0c,inset 0 2px 0 rgba(255,255,255,.25)}
+.form-btn.red:active{box-shadow:0 2px 0 #3f0c0c}
+.form-btn.purple{background:linear-gradient(180deg,#a855f7,#6b21a8);border:2px solid #d8b4fe;box-shadow:0 5px 0 #3b0764,inset 0 2px 0 rgba(255,255,255,.25)}
+.form-btn.purple:active{box-shadow:0 2px 0 #3b0764}
+
+.wave-box{background:linear-gradient(135deg,#0e7490,#155e75);border:2px solid #06b6d4;border-radius:14px;padding:14px;text-align:center;margin-bottom:14px;box-shadow:0 5px 0 #083344,inset 0 2px 0 rgba(255,255,255,.25)}
+.wave-box .wl{font-size:16px;font-weight:900;letter-spacing:2px;text-shadow:0 0 14px rgba(103,232,249,.8)}
+.wave-box .wn{font-family:'Courier New',monospace;font-size:20px;font-weight:900;color:#ffd54a;margin:8px 0;letter-spacing:2px;text-shadow:0 0 12px rgba(255,213,74,.6)}
+.wave-box .wa{font-size:12px;color:#cffafe;margin-bottom:8px}
+.wave-box .wcp{background:rgba(255,255,255,.95);color:#155e75;padding:6px 16px;border-radius:18px;font-weight:900;font-size:11px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3)}
+
+.info-steps{background:rgba(0,0,0,.35);border-radius:11px;padding:11px 14px;font-size:11px;color:#a7f3d0;line-height:1.8;border-left:3px solid #22c55e;margin-bottom:12px}
+.warn-box{background:linear-gradient(160deg,rgba(239,68,68,.25),rgba(153,27,27,.25));border:1.5px solid #ef4444;border-radius:11px;padding:9px 12px;text-align:center;color:#fca5a5;font-weight:900;font-size:11px;margin-bottom:12px;line-height:1.5}
+
+.list-scroll{max-height:340px;overflow-y:auto;padding-right:5px;display:flex;flex-direction:column;gap:7px}
+.list-scroll::-webkit-scrollbar{width:4px}
+.list-scroll::-webkit-scrollbar-thumb{background:#4a7bc8;border-radius:2px}
+.list-item{background:linear-gradient(135deg,rgba(5,20,45,.7),rgba(20,35,65,.8));border:1.5px solid #4a7bc8;border-radius:10px;padding:9px 12px;font-size:11px}
+.list-item.pending{border-color:#f97316}
+.list-item.approved{border-color:#22c55e;opacity:.85}
+.list-item.rejected{border-color:#ef4444;opacity:.6}
+.list-item .li-row{display:flex;justify-content:space-between;margin-bottom:3px;font-weight:900}
+.list-item .li-meta{color:#a7f3d0;font-size:10px;margin:2px 0}
+.list-item .li-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px}
+.mini-btn{padding:5px 8px;border-radius:6px;font-size:10px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;transition:transform .08s;box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.mini-btn:active{transform:translateY(2px);box-shadow:none}
+.mini-btn.green{background:linear-gradient(180deg,#22c55e,#15803d)}
+.mini-btn.red{background:linear-gradient(180deg,#ef4444,#7f1d1d)}
+.mini-btn.blue{background:linear-gradient(180deg,#3b82f6,#1e3a8a)}
+.mini-btn.gold{background:linear-gradient(180deg,#fbbf24,#b45309);color:#1a1204}
+
+.rules-tabs{display:flex;gap:4px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+.rules-tab{padding:7px 14px;border-radius:10px;background:rgba(0,0,0,.4);border:1.5px solid #4a7bc8;color:#a8c9ff;font-weight:900;font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:inherit}
+.rules-tab.active{background:linear-gradient(135deg,#fbbf24,#b45309);border-color:#fde68a;color:#1a1204;box-shadow:0 3px 0 #5a2d04}
+.rules-panel{display:none}
+.rules-panel.active{display:block;animation:fp .3s ease-out}
+@keyframes fp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.mini-table{position:relative;height:200px;background:radial-gradient(ellipse at center,#1a7a5c 0%,#0c4d42 60%,#06372f 100%);border:5px solid #7a5a30;border-radius:20px;margin-bottom:14px;box-shadow:inset 0 0 30px rgba(0,0,0,.6)}
+.mt-seat{position:absolute;width:52px;text-align:center;color:#fff;font-size:9px;font-weight:900;line-height:1.2}
+.mt-seat .mt-av{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#60a5fa,#1e40af 70%);border:2px solid #93c5fd;margin:0 auto 3px;display:grid;place-items:center;font-size:15px;font-weight:1000}
+.mt-seat.dealer .mt-av{background:radial-gradient(circle at 30% 30%,#fbbf24,#b45309 70%);border-color:#fde68a}
+.mt-seat.top{top:6px;left:50%;transform:translateX(-50%)}
+.mt-seat.left{left:8px;top:50%;transform:translateY(-50%)}
+.mt-seat.right{right:8px;top:50%;transform:translateY(-50%)}
+.mt-seat.bottom{bottom:6px;left:50%;transform:translateX(-50%)}
+.mt-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.mt-center .mt-pot{background:rgba(0,0,0,.6);color:#ffd54a;font-weight:1000;font-size:11px;padding:5px 14px;border-radius:12px;border:1.5px solid #ffd700}
+
+.step-box{background:linear-gradient(135deg,rgba(5,20,45,.7),rgba(20,35,65,.7));border:1.5px solid #4a7bc8;border-radius:12px;padding:12px;margin-bottom:12px}
+.step-box .sb-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.step-box .sb-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#fbbf24,#b45309);color:#1a1204;font-size:13px;font-weight:1000;display:grid;place-items:center;box-shadow:0 2px 0 #5a2d04;flex-shrink:0}
+.step-box .sb-title{font-size:12px;font-weight:1000;color:#ffd54a;line-height:1.3;flex:1}
+.step-box .sb-title small{display:block;font-size:9.5px;color:#a8c9ff;font-weight:700;margin-top:2px}
+.step-box .sb-desc{font-size:11px;color:#a7f3d0;line-height:1.7;padding-left:34px}
+.step-box .sb-desc b{color:#ffd54a}
+.step-box .sb-cards{display:flex;gap:6px;justify-content:center;padding:10px 0 4px;flex-wrap:wrap}
+
+.demo-card{width:44px;height:62px;border-radius:6px;background:linear-gradient(160deg,#fff,#e8e8e8);border:1.5px solid #111;color:#111;font-family:Georgia,serif;position:relative;overflow:hidden;box-shadow:0 3px 8px rgba(0,0,0,.5);flex-shrink:0}
+.demo-card .dc-tl{position:absolute;top:2px;left:4px;font-size:11px;font-weight:900;line-height:1}
+.demo-card .dc-tl-suit{position:absolute;top:15px;left:4px;font-size:10px;line-height:1}
+.demo-card .dc-c{position:absolute;bottom:3px;right:4px;font-size:16px;opacity:.85}
+.demo-card.red{color:#c00}
+.demo-card.back{background:linear-gradient(135deg,#1e40af,#3b82f6 50%,#1e40af);border-color:#0f172a}
+.demo-card.back::after{content:'♠';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.9);font-size:18px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.demo-card.small{width:34px;height:48px}
+.demo-card.small .dc-tl{font-size:10px}
+.demo-card.small .dc-tl-suit{font-size:9px;top:13px}
+.demo-card.small .dc-c{font-size:13px}
+
+.rank-list{display:flex;flex-direction:column;gap:7px}
+.rank-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:linear-gradient(135deg,rgba(5,20,45,.6),rgba(20,35,65,.6));border:1.5px solid #4a7bc8;border-radius:10px}
+.rank-badge{width:30px;height:30px;border-radius:8px;background:linear-gradient(180deg,#fbbf24,#b45309);color:#1a1204;font-size:13px;font-weight:1000;display:grid;place-items:center;flex-shrink:0;box-shadow:0 2px 0 #5a2d04}
+.rank-item.gold .rank-badge{background:linear-gradient(180deg,#fde047,#ca8a04);box-shadow:0 2px 0 #854d0e,0 0 12px rgba(253,224,71,.6)}
+.rank-item.silver .rank-badge{background:linear-gradient(180deg,#e5e7eb,#6b7280);color:#111;box-shadow:0 2px 0 #374151}
+.rank-item.bronze .rank-badge{background:linear-gradient(180deg,#f59e0b,#78350f);box-shadow:0 2px 0 #451a03}
+.rank-info{flex:1;min-width:0}
+.rank-info b{display:block;font-size:11.5px;color:#ffd54a;font-weight:1000;line-height:1.2}
+.rank-info small{display:block;font-size:9.5px;color:#a8c9ff;font-weight:700;margin-top:2px}
+
+.rake-demo{background:linear-gradient(135deg,#0e7490,#155e75);border:2px solid #06b6d4;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 4px 0 #083344}
+.rake-demo .rd-title{font-size:12px;font-weight:1000;color:#cffafe;text-align:center;margin-bottom:8px;letter-spacing:.5px}
+.rake-demo .rd-calc{display:flex;justify-content:space-between;font-size:11px;color:#cffafe;padding:4px 0;border-bottom:1px dashed rgba(103,232,249,.3)}
+.rake-demo .rd-calc:last-child{border-bottom:0;padding-top:8px;font-size:13px;font-weight:1000}
+.rake-demo .rd-calc b{color:#ffd54a}
+
+.emote-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.emote-pack{padding:12px 10px;border-radius:12px;background:linear-gradient(135deg,rgba(5,20,45,.85),rgba(20,35,65,.85));border:2px solid #4a7bc8;text-align:center;cursor:pointer;transition:all .15s;position:relative}
+.emote-pack:active{transform:translateY(3px)}
+.emote-pack.owned{border-color:#22c55e;background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(20,35,65,.9))}
+.emote-pack .ep-emoji{font-size:32px;line-height:1;margin-bottom:6px}
+.emote-pack .ep-name{font-size:11.5px;font-weight:1000;color:#ffd54a;line-height:1.2}
+.emote-pack .ep-name small{display:block;font-size:9.5px;color:#a8c9ff;font-weight:700;margin-top:2px}
+.emote-pack .ep-price{display:inline-block;background:#1a1204;color:#ffd54a;font-size:11px;font-weight:1000;padding:4px 10px;border-radius:8px;margin-top:8px;box-shadow:inset 0 0 0 1.5px #ffd54a}
+.emote-pack .ep-owned{display:inline-block;background:linear-gradient(180deg,#22c55e,#15803d);color:#fff;font-size:10px;font-weight:1000;padding:4px 10px;border-radius:8px;margin-top:8px;border:1px solid #86efac}
+
+/* ============================================================
+   GAME SCREEN v8.2 — FIXED LAYOUT
+   ============================================================ */
+.game-wrap{width:100%;height:100%;position:relative;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;border:8px solid #3a2418;background:radial-gradient(ellipse at 50% 45%,#1a7a5c 0%,#0c4d42 55%,#06372f 100%);box-shadow:inset 0 0 60px rgba(0,0,0,.6),inset 0 0 0 4px #d4a05a,inset 0 0 0 7px #7a5a30}
+
+.game-head{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:6px 8px;height:44px;flex:0 0 auto;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent);z-index:12;position:relative}
+.game-head .pill{padding:4px 9px;border-radius:16px;font-size:10.5px;font-weight:900;background:rgba(0,0,0,.65);border:1.5px solid #4a7bc8;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.game-head .pill.gold{border-color:#ffd700;color:#ffd700}
+.game-head .pill.demo{border-color:#fbbf24;color:#fbbf24;background:linear-gradient(180deg,#78350f,#451a03);animation:tp 1.6s infinite}
+.game-head .pill.diff{border-color:#a78bfa;color:#ddd6fe;background:linear-gradient(180deg,#3b0764,#1e1b4b)}
+.game-head .pill.diff.hard{border-color:#fca5a5;color:#fee2e2;background:linear-gradient(180deg,#7f1d1d,#450a0a)}
+.game-head .pill.phase{background:linear-gradient(180deg,#0369a1,#075985);border-color:#67e8f9;color:#e0f2fe;animation:ph 1s infinite}
+.game-head .pill.timer{background:linear-gradient(180deg,#7f1d1d,#991b1b);border-color:#fca5a5;color:#fff;animation:tp 1s infinite}
+.game-head .pill.timer.green{background:linear-gradient(180deg,#14532d,#166534);border-color:#86efac}
+.game-head .pill.rake{border-color:#22c55e;color:#22c55e;background:linear-gradient(180deg,#14532d,#052e16)}
+@keyframes tp{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes ph{0%,100%{box-shadow:0 0 0 0 rgba(103,232,249,.6)}50%{box-shadow:0 0 0 6px rgba(103,232,249,0)}}
+
+.pre-exit{width:32px;height:32px;border-radius:50%;background:linear-gradient(180deg,#ef4444,#7f1d1d);border:2px solid #fca5a5;color:#fff;font-size:14px;font-weight:900;cursor:pointer;display:grid;place-items:center;flex-shrink:0;box-shadow:0 3px 0 #3f0c0c,inset 0 2px 0 rgba(255,255,255,.25);transition:transform .08s,box-shadow .08s,background .2s;position:relative}
+.pre-exit:active{transform:translateY(2px);box-shadow:0 1px 0 #3f0c0c}
+.pre-exit.queued{background:linear-gradient(180deg,#f59e0b,#b45309);border-color:#fde68a;box-shadow:0 3px 0 #5a2d04,0 0 14px rgba(245,158,11,.9),inset 0 2px 0 rgba(255,255,255,.35);animation:pq .8s infinite}
+@keyframes pq{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.pre-exit .badge{position:absolute;bottom:-4px;right:-6px;background:#fbbf24;color:#1a1204;font-size:7.5px;font-weight:1000;padding:1px 5px;border-radius:8px;border:1.5px solid #1a1204;white-space:nowrap}
+
+/* GAME SEATS - only opponents + dealer + pot */
+.game-seats{flex:1;position:relative;min-height:0;padding-top:32px}
+
+/* DEALER BADGE — top-left corner, out of the way */
+.dealer-badge{
+  position:absolute;
+  top:2px;left:6px;
+  display:flex;flex-direction:row;align-items:center;gap:6px;
+  padding:3px 9px 3px 3px;
+  background:linear-gradient(135deg,rgba(120,53,15,.95),rgba(69,26,3,.95));
+  border:1.5px solid #fbbf24;
+  border-radius:20px;
+  z-index:8;
+  pointer-events:none;
+  box-shadow:0 3px 10px rgba(0,0,0,.6),0 0 12px rgba(251,191,36,.4);
+}
+.dealer-badge .db-av{
+  width:22px;height:22px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#fbbf24,#b45309 70%);
+  border:1.5px solid #fde68a;
+  display:grid;place-items:center;font-size:11px;
+  flex-shrink:0;
+}
+.dealer-badge .db-txt{font-size:9px;font-weight:1000;color:#fde68a;letter-spacing:.5px;white-space:nowrap;line-height:1}
+
+/* OPPONENT SEATS */
+.seat{position:absolute;width:clamp(90px,12vw,120px);background:linear-gradient(135deg,rgba(5,20,45,.94),rgba(20,35,65,.94));border:2px solid #4a7bc8;border-radius:12px;padding:4px 6px;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.55);transition:box-shadow .2s,border-color .2s}
+.seat.turn{border-color:#22c55e;animation:st 1s infinite}
+@keyframes st{0%,100%{box-shadow:0 0 16px rgba(34,197,94,.6)}50%{box-shadow:0 0 30px rgba(34,197,94,1)}}
+.seat.folded{opacity:.4;filter:grayscale(.7)}
+.seat.winner{border-color:#ffd700;animation:sw .8s infinite}
+@keyframes sw{0%,100%{box-shadow:0 0 22px rgba(255,215,0,.7)}50%{box-shadow:0 0 40px rgba(255,215,0,1)}}
+.seat .s-name{font-size:10px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat .s-coins{font-size:9.5px;color:#ffd54a;margin-top:1px;font-weight:900}
+.seat .s-bet{font-size:8.5px;color:#86efac;margin-top:1px;font-weight:900;display:none}
+.seat .s-bet.show{display:block}
+.s-top{top:4px;left:50%;transform:translateX(-50%)}
+.s-left{left:6px;top:55%;transform:translateY(-50%)}
+.s-right{right:6px;top:55%;transform:translateY(-50%)}
+.s-cards{display:flex;gap:3px;justify-content:center;margin-top:4px}
+.mini-card{width:clamp(26px,3.6vw,34px);height:clamp(38px,5.2vw,50px);border-radius:4px;background:linear-gradient(160deg,#fff,#e8e8e8);border:1.5px solid #111;color:#111;font-family:Georgia,serif;position:relative;overflow:hidden;box-shadow:0 3px 6px rgba(0,0,0,.5)}
+.mini-card .mc-r{position:absolute;top:2px;left:3px;font-size:10px;font-weight:900;line-height:1}
+.mini-card .mc-s{position:absolute;top:13px;left:3px;font-size:9px;line-height:1}
+.mini-card .mc-c{position:absolute;bottom:3px;right:3px;font-size:15px;line-height:1;opacity:.85}
+.mini-card.red{color:#c00}
+.mini-card.back{background:linear-gradient(135deg,#1e40af,#3b82f6 50%,#1e40af);border-color:#0f172a}
+.mini-card.back::after{content:'♠';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.85);font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+
+/* CENTER POT */
+.center-pot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:3;display:flex;flex-direction:column;align-items:center;gap:5px}
+.pot-chips{display:flex;justify-content:center;gap:3px;flex-wrap:wrap;max-width:160px;min-height:20px}
+.chip-icon{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:'Arial Black',Arial;font-weight:900;font-size:7px;color:#fff;border:1.5px solid rgba(0,0,0,.5);box-shadow:0 2px 5px rgba(0,0,0,.6),inset 0 -2px 4px rgba(0,0,0,.4),inset 0 2px 4px rgba(255,255,255,.35);text-shadow:0 1px 2px rgba(0,0,0,.7);animation:chipIn .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes chipIn{0%{transform:scale(.3) rotate(-30deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+.chip-icon.c100{background:radial-gradient(circle at 30% 30%,#4ade80,#15803d 70%)}
+.chip-icon.c200{background:radial-gradient(circle at 30% 30%,#86efac,#166534 70%)}
+.chip-icon.c500{background:radial-gradient(circle at 30% 30%,#60a5fa,#1d4ed8 70%)}
+.chip-icon.c1000{background:radial-gradient(circle at 30% 30%,#fde047,#ca8a04 70%);color:#422006;text-shadow:none}
+.chip-icon.c5000{background:radial-gradient(circle at 30% 30%,#f87171,#991b1b 70%)}
+.chip-icon.c10000{background:radial-gradient(circle at 30% 30%,#a78bfa,#4c1d95 70%)}
+.pot-label{display:inline-block;padding:4px 12px;border-radius:12px;background:linear-gradient(135deg,#1e3a5f,#0d1f33);border:2px solid #ffd700;font-size:11px;font-weight:1000;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 16px rgba(255,215,0,.4),inset 0 1px rgba(255,255,255,.15);letter-spacing:.5px}
+.pot-label .amt{color:#ffd54a;margin-left:6px;font-size:13px;text-shadow:0 0 10px rgba(255,213,74,.9)}
+
+/* ═══════════════════════════════════════════════════
+   PLAYER SEAT — now a flex child, NOT absolute
+   ═══════════════════════════════════════════════════ */
+.player-seat-outer{
+  flex:0 0 auto;
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  padding:2px 0 4px;
+  z-index:5;
+  position:relative;
+}
+.player-seat{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:4px 10px 5px;
+  background:linear-gradient(135deg,rgba(5,20,45,.96),rgba(20,35,65,.96));
+  border:2.5px solid #ffd700;border-radius:16px;
+  box-shadow:0 8px 24px rgba(0,0,0,.6),0 0 24px rgba(255,215,0,.35),inset 0 1px rgba(255,255,255,.15);
+  position:relative;
+}
+.player-seat.turn{border-color:#22c55e;box-shadow:0 8px 24px rgba(0,0,0,.6),0 0 30px rgba(34,197,94,.85),inset 0 1px rgba(255,255,255,.15);animation:st 1s infinite}
+.player-seat.folded{opacity:.5}
+.ps-head{display:flex;align-items:center;gap:8px;width:100%;justify-content:space-between;padding:0 4px}
+.ps-name{font-size:11px;font-weight:900;color:#ffd54a;letter-spacing:.5px}
+.ps-coins{font-size:11px;font-weight:1000;color:#ffd54a;text-shadow:0 0 8px rgba(255,213,74,.6)}
+.ps-coins::before{content:'🪙 ';font-size:9px}
+.ps-bet{font-size:9.5px;color:#86efac;font-weight:900;display:none}
+.ps-bet.show{display:inline}
+.player-hand{display:flex;gap:5px;justify-content:center;align-items:flex-end}
+
+.ph-slot{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px}
+.ph-slot .ph-label{font-size:8px;font-weight:1000;color:#fde68a;background:rgba(0,0,0,.75);padding:2px 6px;border-radius:6px;border:1px solid #fbbf24;letter-spacing:.3px;white-space:nowrap}
+.ph-slot.hidden-slot .ph-label{color:#fff;background:linear-gradient(180deg,#7f1d1d,#450a0a);border-color:#fca5a5}
+.ph-slot.up-slot .ph-label{background:linear-gradient(180deg,#14532d,#052e16);border-color:#86efac}
+
+.ph-card{width:clamp(44px,6vw,60px);height:clamp(62px,8.4vw,84px);border-radius:6px;background:linear-gradient(160deg,#fff,#e8e8e8);border:1.5px solid #111;color:#111;font-family:Georgia,serif;position:relative;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.55);transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.ph-card.deal-anim{animation:cardIn .5s cubic-bezier(.34,1.56,.64,1) backwards}
+@keyframes cardIn{0%{transform:translate(40px,-120px) scale(.4) rotate(-25deg);opacity:0}100%{transform:translateY(0) scale(1) rotate(0);opacity:1}}
+.ph-card .ph-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.ph-card .ph-corner-tl{position:absolute;top:3px;left:5px;font-size:clamp(11px,1.6vw,15px);font-weight:900;line-height:1}
+.ph-card .ph-suit-tl{position:absolute;top:18px;left:5px;font-size:clamp(9px,1.3vw,12px);line-height:1}
+.ph-card .ph-corner-br{position:absolute;bottom:3px;right:5px;font-size:clamp(11px,1.6vw,15px);font-weight:900;line-height:1;transform:rotate(180deg)}
+.ph-card .ph-center{font-size:clamp(22px,3vw,32px);line-height:1;opacity:.9}
+.ph-card.red{color:#c00}
+.ph-card .ph-back{position:absolute;inset:0;background:linear-gradient(135deg,#1e40af,#3b82f6 50%,#1e40af);display:grid;place-items:center;clip-path:polygon(0 0, 100% 0, 100% 100%, 100% 100%, 0 100%);will-change:clip-path}
+.ph-card .ph-back::after{content:'♠';color:rgba(255,255,255,.9);font-size:clamp(18px,2.6vw,26px);text-shadow:0 2px 4px rgba(0,0,0,.5)}
+.ph-card .ph-back::before{content:'';position:absolute;inset:4px;border:1.5px dashed rgba(255,255,255,.45);border-radius:4px}
+.ph-card.revealed .ph-back{display:none}
+.ph-card.peeking{cursor:grabbing;z-index:50;animation:heartBeat 0.72s ease-in-out infinite;box-shadow:0 12px 30px rgba(0,0,0,.75),0 0 32px rgba(255,50,80,.95),0 0 64px rgba(255,50,80,.5)}
+@keyframes heartBeat{0%,100%{transform:translateY(-8px) scale(1.03)}15%{transform:translateY(-8px) scale(1.09)}30%{transform:translateY(-8px) scale(1.03)}45%{transform:translateY(-8px) scale(1.07)}60%{transform:translateY(-8px) scale(1.03)}}
+.ph-card[data-peel="1"]::after{content:'';position:absolute;bottom:0;right:0;width:18px;height:18px;background:linear-gradient(315deg,transparent 48%,rgba(251,191,36,.95) 50%,rgba(251,191,36,.85) 100%);pointer-events:none;border-top-left-radius:6px;box-shadow:-2px -2px 6px rgba(0,0,0,.3);animation:peelHint 2s ease-in-out infinite}
+@keyframes peelHint{0%,100%{opacity:.65;transform:translate(0,0)}50%{opacity:1;transform:translate(-2px,-2px)}}
+.ph-card[data-peel="1"].peeking::after{display:none}
+.ph-card.selectable{cursor:pointer;animation:cardSelect 1.2s ease-in-out infinite}
+@keyframes cardSelect{0%,100%{box-shadow:0 4px 10px rgba(0,0,0,.55),0 0 0 0 rgba(251,191,36,.9)}50%{box-shadow:0 4px 10px rgba(0,0,0,.55),0 0 0 8px rgba(251,191,36,0)}}
+.ph-card.tapped{animation:tapPulse .4s ease-out}
+@keyframes tapPulse{0%{transform:scale(1)}50%{transform:scale(1.12);box-shadow:0 0 30px rgba(251,191,36,.9)}100%{transform:scale(1)}}
+.ph-card.reveal-lock{box-shadow:0 4px 10px rgba(0,0,0,.55),0 0 18px rgba(255,215,0,.7)}
+
+body.suspense-mode::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at center,transparent 20%,rgba(0,0,0,.72) 100%);pointer-events:none;z-index:90;animation:suspensePulse 1.05s ease-in-out infinite}
+@keyframes suspensePulse{0%,100%{opacity:.65}50%{opacity:1}}
+
+.flying-chip{position:fixed;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:'Arial Black',Arial;font-weight:900;font-size:8px;color:#422006;background:radial-gradient(circle at 30% 30%,#fde047,#ca8a04 70%);border:2px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.6),inset 0 -3px 5px rgba(0,0,0,.3);pointer-events:none;z-index:999;transition:left .55s cubic-bezier(.5,0,.7,1),top .55s cubic-bezier(.5,0,.7,1),transform .55s,opacity .55s}
+
+/* ═══════════════════════════════════════════════════
+   ACTION BAR
+   ═══════════════════════════════════════════════════ */
+.action-bar{flex:0 0 auto;background:linear-gradient(0deg,rgba(0,0,0,.95),rgba(0,0,0,.78),transparent);padding:5px 10px 7px;z-index:6;position:relative;display:flex;flex-direction:column;gap:5px;border-top:1px solid rgba(96,165,250,.15)}
+
+.bet-display{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 11px;background:rgba(0,0,0,.55);border-radius:10px;border:1.5px solid #4a7bc8}
+.bet-display .bd-lbl{font-size:10px;font-weight:900;color:#a7f3d0;letter-spacing:.5px}
+.bet-display .bd-val{font-family:'Courier New',monospace;font-size:16px;font-weight:1000;color:#ffd54a;text-shadow:0 0 10px rgba(255,213,74,.7)}
+.bet-display .bd-val.zero{color:#6b7280;text-shadow:none}
+
+.chips-row{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.chip-btn{aspect-ratio:1;border-radius:50%;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Arial Black',Arial;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8);transition:transform .12s,box-shadow .12s;border:none;padding:0;box-shadow:0 4px 0 rgba(0,0,0,.5),0 6px 12px rgba(0,0,0,.5),inset 0 -4px 8px rgba(0,0,0,.35),inset 0 4px 8px rgba(255,255,255,.4);min-width:0}
+.chip-btn:active{transform:translateY(3px) scale(.94);box-shadow:0 2px 0 rgba(0,0,0,.5)}
+.chip-btn:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(.7)}
+.chip-btn::before{content:'';position:absolute;inset:5px;border-radius:50%;border:1.5px dashed rgba(255,255,255,.7)}
+.chip-btn .cb-val{font-size:clamp(9px,1.5vw,12px);line-height:1;z-index:1}
+.chip-btn .cb-sub{font-size:6.5px;font-weight:800;opacity:.8;z-index:1;margin-top:1px}
+.chip-btn.c100{background:radial-gradient(circle at 30% 30%,#4ade80,#15803d 70%)}
+.chip-btn.c200{background:radial-gradient(circle at 30% 30%,#86efac,#166534 70%)}
+.chip-btn.c500{background:radial-gradient(circle at 30% 30%,#60a5fa,#1d4ed8 70%)}
+.chip-btn.c1000{background:radial-gradient(circle at 30% 30%,#fde047,#ca8a04 70%);color:#422006;text-shadow:none}
+.chip-btn.c1000 .cb-sub{color:#422006}
+.chip-btn.c5000{background:radial-gradient(circle at 30% 30%,#f87171,#991b1b 70%)}
+.chip-btn.c10000{background:radial-gradient(circle at 30% 30%,#a78bfa,#4c1d95 70%)}
+.chip-btn.allin{background:linear-gradient(135deg,#ff0080,#7928ca,#ff0080);background-size:200% 200%;animation:shineBtn 2s linear infinite}
+@keyframes shineBtn{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+
+.action-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.act-btn{padding:8px 6px;border-radius:10px;font-family:inherit;font-weight:1000;font-size:11px;color:#fff;cursor:pointer;transition:transform .08s,box-shadow .08s,filter .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.15}
+.act-btn:disabled{opacity:.32;cursor:not-allowed;filter:grayscale(.6)}
+.act-btn:active:not(:disabled){transform:translateY(2px)}
+.act-btn .b1{font-weight:1000;font-size:11px}
+.act-btn .b2{font-size:8px;opacity:.85;font-weight:800}
+.act-clear{background:linear-gradient(180deg,#6b7280,#374151);border:2px solid #9ca3af;box-shadow:0 4px 0 #1f2937,inset 0 2px 0 rgba(255,255,255,.2)}
+.act-clear:active:not(:disabled){box-shadow:0 2px 0 #1f2937}
+.act-fold{background:linear-gradient(180deg,#ef4444,#7f1d1d);border:2px solid #fca5a5;box-shadow:0 4px 0 #3f0c0c,inset 0 2px 0 rgba(255,255,255,.25)}
+.act-fold:active:not(:disabled){box-shadow:0 2px 0 #3f0c0c}
+.act-call{background:linear-gradient(180deg,#3b82f6,#1e3a8a);border:2px solid #93c5fd;box-shadow:0 4px 0 #0a1e4a,inset 0 2px 0 rgba(255,255,255,.25)}
+.act-call:active:not(:disabled){box-shadow:0 2px 0 #0a1e4a}
+.act-raise{background:linear-gradient(180deg,#22c55e,#15803d);border:2px solid #86efac;box-shadow:0 4px 0 #0a2a1a,inset 0 2px 0 rgba(255,255,255,.25)}
+.act-raise:active:not(:disabled){box-shadow:0 2px 0 #0a2a1a}
+
+.social-bar{display:flex;gap:5px;align-items:center}
+.social-bar input{flex:1;padding:6px 10px;border-radius:20px;border:1.5px solid #4a7bc8;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-family:inherit;box-shadow:inset 0 2px 4px rgba(0,0,0,.5)}
+.social-bar input:focus{border-color:#ffd54a}
+.social-bar input::placeholder{color:#6b8fb5}
+.social-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid;cursor:pointer;display:grid;place-items:center;font-size:15px;flex-shrink:0;transition:transform .08s;box-shadow:0 2px 0 rgba(0,0,0,.4);position:relative}
+.social-btn:active{transform:translateY(2px);box-shadow:none}
+.social-btn.emo{background:linear-gradient(180deg,#fbbf24,#b45309);border-color:#fde68a;color:#1a1204}
+.social-btn.interact{background:linear-gradient(180deg,#a855f7,#6b21a8);border-color:#d8b4fe;color:#fff}
+.social-btn.shop{background:linear-gradient(180deg,#22c55e,#15803d);border-color:#86efac;color:#fff;font-size:12px}
+.social-btn.send{background:linear-gradient(180deg,#3b82f6,#1e3a8a);border-color:#93c5fd;color:#fff}
+
+.chat-log{position:absolute;bottom:100%;left:0;right:0;max-height:70px;overflow-y:auto;padding:4px 8px;pointer-events:none;display:flex;flex-direction:column;gap:2px;z-index:4;mask-image:linear-gradient(to top,transparent,black 30%)}
+.chat-msg{background:rgba(0,0,0,.65);border-radius:8px;padding:3px 8px;font-size:10px;color:#fff;align-self:flex-start;max-width:70%;border:1px solid rgba(96,165,250,.3);animation:chatIn .3s ease-out}
+.chat-msg.self{align-self:flex-end;background:linear-gradient(135deg,rgba(251,191,36,.85),rgba(217,119,6,.85));color:#1a1204;font-weight:900}
+.chat-msg .cm-name{font-weight:1000;color:#fde68a;margin-right:4px}
+.chat-msg.self .cm-name{color:#1a1204}
+@keyframes chatIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.emote-float{position:fixed;font-size:56px;z-index:1000;pointer-events:none;animation:emoteFloat 2.5s ease-out forwards;filter:drop-shadow(0 8px 16px rgba(0,0,0,.7))}
+@keyframes emoteFloat{0%{bottom:120px;transform:scale(.3) rotate(-30deg);opacity:0}15%{opacity:1;transform:scale(1.3) rotate(10deg)}70%{transform:scale(1.5) rotate(-5deg) translateY(-80px);opacity:1}100%{transform:scale(.8) rotate(30deg) translateY(-250px);opacity:0}}
+
+/* ═══════════════════════════════════════════════════
+   PEEK BANNER — MOVED to top of game-seats
+   NO LONGER BLOCKS CARDS
+   ═══════════════════════════════════════════════════ */
+.peek-banner{
+  position:absolute;
+  top:2px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:4px 12px;
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(251,191,36,.92),rgba(217,119,6,.92));
+  color:#1a1204;
+  font-weight:1000;
+  font-size:10px;
+  border:1.5px solid #fde68a;
+  box-shadow:0 4px 12px rgba(0,0,0,.55);
+  z-index:10;
+  display:none;
+  align-items:center;
+  gap:5px;
+  white-space:nowrap;
+  animation:pbin 2.4s ease-in-out infinite;
+  max-width:65%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.peek-banner.show{display:flex}
+@keyframes pbin{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.03)}}
+
+.intermission{position:absolute;inset:0;background:radial-gradient(circle,rgba(0,0,0,.75),rgba(0,0,0,.92));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:11;padding:20px;text-align:center}
+.intermission .im-title{font-size:22px;font-weight:1000;color:#ffd54a;letter-spacing:1.5px;text-shadow:0 0 20px rgba(255,213,74,.5)}
+.intermission .im-sub{font-size:12px;color:#a8c9ff;line-height:1.6}
+.intermission .im-timer{width:110px;height:110px;border-radius:50%;position:relative;display:grid;place-items:center;background:conic-gradient(#22c55e 0deg, rgba(30,58,95,.5) 0deg);transition:background .3s}
+.intermission .im-timer::before{content:'';position:absolute;inset:8px;border-radius:50%;background:linear-gradient(160deg,#0a1e38,#052e16)}
+.intermission .im-val{position:relative;font-family:'Courier New',monospace;font-size:34px;font-weight:1000;color:#ffd54a;text-shadow:0 0 20px rgba(255,213,74,.7);z-index:1}
+.intermission .im-val small{display:block;font-size:10px;color:#a8c9ff;font-weight:700;letter-spacing:1px;margin-top:2px}
+
+/* DEALING OVERLAY */
+.dealing-overlay{position:absolute;inset:0;pointer-events:none;z-index:9;display:none}
+.dealing-overlay.active{display:block}
+.dealing-hand{
+  position:absolute;
+  font-size:36px;
+  filter:drop-shadow(0 6px 12px rgba(0,0,0,.7));
+  transition:left .4s cubic-bezier(.4,0,.6,1),top .4s cubic-bezier(.4,0,.6,1);
+}
+
+.emote-picker{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.emote-opt{aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,rgba(20,60,115,.9),rgba(8,26,56,.95));border:1.5px solid #4d8fe5;cursor:pointer;display:grid;place-items:center;font-size:24px;transition:all .12s}
+.emote-opt:active{transform:scale(.92)}
+
+.table-card{padding:11px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(20,60,115,.9),rgba(8,26,56,.95));border:1.5px solid #4d8fe5}
+.table-card .tc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:5px}
+.table-card .tc-name{font-size:12px;font-weight:1000;color:#fff}
+.table-card .tc-ante{font-size:12px;font-weight:1000;color:#ffd54a;background:rgba(0,0,0,.4);padding:2px 8px;border-radius:8px;white-space:nowrap}
+.table-card .tc-meta{display:flex;justify-content:space-between;font-size:10px;color:#9ebce6;margin-bottom:8px}
+.table-card .tc-players{display:flex;gap:3px;align-items:center}
+.table-card .tc-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;animation:dp 1.5s infinite}
+.table-card .tc-dot.busy{background:#f59e0b;box-shadow:0 0 6px #f59e0b}
+.table-card .tc-join{width:100%;padding:8px;border-radius:9px;background:linear-gradient(180deg,#22c55e,#15803d);color:#fff;font-weight:1000;font-size:12px;cursor:pointer;box-shadow:0 3px 0 #0a2a1a;border:1px solid #86efac;font-family:inherit;letter-spacing:.3px}
+.table-card .tc-join:active{transform:translateY(2px);box-shadow:0 1px 0 #0a2a1a}
+.table-card .tc-join:disabled{background:linear-gradient(180deg,#6b7280,#374151);box-shadow:0 3px 0 #1f2937;border-color:#4b5563;cursor:not-allowed;transform:none}
+
+.player-card{display:flex;align-items:center;gap:10px;padding:9px 11px;background:linear-gradient(135deg,rgba(20,60,115,.9),rgba(8,26,56,.95));border:1.5px solid #4d8fe5;border-radius:11px}
+.player-card .pc-avatar{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#60a5fa,#1e40af 70%);border:2px solid #93c5fd;display:grid;place-items:center;font-size:14px;font-weight:1000;flex-shrink:0;position:relative}
+.player-card .pc-avatar.online::after{content:'';position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid #0a1e38;box-shadow:0 0 6px #22c55e}
+.player-card .pc-txt{flex:1;min-width:0}
+.player-card .pc-txt b{display:block;font-size:12px;color:#fff;font-weight:1000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-card .pc-txt small{display:block;font-size:9.5px;color:#a7f3d0;margin-top:2px;font-weight:700}
+.player-card .pc-status{font-size:10px;font-weight:900;padding:3px 8px;border-radius:8px;background:rgba(34,197,94,.2);color:#22c55e;border:1px solid #22c55e;white-space:nowrap}
+.player-card .pc-status.busy{background:rgba(251,191,36,.2);color:#fbbf24;border-color:#fbbf24}
+.player-card .pc-invite{padding:5px 10px;border-radius:8px;background:linear-gradient(180deg,#22c55e,#15803d);color:#fff;font-weight:900;font-size:10px;cursor:pointer;border:1px solid #86efac;box-shadow:0 2px 0 #0a2a1a;font-family:inherit;white-space:nowrap}
+.player-card .pc-invite:active{transform:translateY(2px);box-shadow:none}
+.player-card .pc-invite:disabled{background:linear-gradient(180deg,#6b7280,#374151);border-color:#4b5563;box-shadow:0 2px 0 #1f2937;cursor:not-allowed;opacity:.7}
+
+.search-anim{display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px 20px;text-align:center}
+.search-anim .sa-ring{width:70px;height:70px;border-radius:50%;border:4px solid rgba(96,165,250,.2);border-top-color:#60a5fa;border-right-color:#3b82f6;animation:spin 1s linear infinite;box-shadow:0 0 24px rgba(96,165,250,.5)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.search-anim .sa-txt{font-size:12px;color:#a7f3d0;font-weight:900;line-height:1.6}
+.search-anim .sa-txt small{display:block;font-size:10px;color:#6b8fb5;font-weight:700;margin-top:4px}
+
+.diff-btn { padding:18px 12px;border-radius:16px; display:flex;flex-direction:column;align-items:center;gap:5px; font-family:inherit;font-weight:900;color:#fff;cursor:pointer; transition:transform .08s,box-shadow .08s; }
+.diff-btn:active { transform:translateY(3px); }
+.diff-btn.normal { background:linear-gradient(160deg,#3b82f6,#1e3a8a); border:2px solid #93c5fd; box-shadow:0 6px 0 #0a1e4a,0 10px 24px rgba(59,130,246,.4),inset 0 2px 0 rgba(255,255,255,.25); }
+.diff-btn.normal:active { box-shadow:0 3px 0 #0a1e4a; }
+.diff-btn.hard { background:linear-gradient(160deg,#dc2626,#7f1d1d); border:2px solid #fca5a5; box-shadow:0 6px 0 #3f0c0c,0 10px 24px rgba(220,38,38,.4),inset 0 2px 0 rgba(255,255,255,.25); }
+.diff-btn.hard:active { box-shadow:0 3px 0 #3f0c0c; }
+.diff-btn .diff-ico { font-size:36px;line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5)); }
+.diff-btn .diff-name { font-size:16px;letter-spacing:1.5px; }
+.diff-btn .diff-en { font-size:10px;opacity:.85;font-weight:700; }
+.diff-btn .diff-meta { font-size:9px;opacity:.78;margin-top:4px;line-height:1.5;text-align:center; }
+
+.bet-chips-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;padding:8px 0}
+.bet-chip{aspect-ratio:1;border-radius:50%;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Arial Black',Arial;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8);transition:transform .12s,box-shadow .12s;border:none;padding:0;box-shadow:0 5px 0 rgba(0,0,0,.45),0 8px 16px rgba(0,0,0,.5),inset 0 -5px 10px rgba(0,0,0,.35),inset 0 5px 10px rgba(255,255,255,.4)}
+.bet-chip:active{transform:translateY(4px) scale(.95);box-shadow:0 2px 0 rgba(0,0,0,.45)}
+.bet-chip::before{content:'';position:absolute;inset:6px;border-radius:50%;border:2px dashed rgba(255,255,255,.75)}
+.bet-chip .bc-val{font-size:clamp(12px,2.4vw,17px);line-height:1;z-index:1}
+.bet-chip .bc-sub{font-size:8px;color:rgba(255,255,255,.75);margin-top:3px;font-weight:700;letter-spacing:.5px;z-index:1}
+.bet-chip.c100{background:radial-gradient(circle at 30% 30%,#4ade80,#15803d 70%)}
+.bet-chip.c500{background:radial-gradient(circle at 30% 30%,#60a5fa,#1d4ed8 70%)}
+.bet-chip.c1000{background:radial-gradient(circle at 30% 30%,#fde047,#ca8a04 70%);color:#422006;text-shadow:none}
+.bet-chip.c1000 .bc-sub{color:#422006;opacity:.75}
+.bet-chip.c5000{background:radial-gradient(circle at 30% 30%,#f87171,#991b1b 70%)}
+.bet-chip.c10000{background:radial-gradient(circle at 30% 30%,#a78bfa,#4c1d95 70%)}
+.bet-chip.selected{transform:scale(1.08);box-shadow:0 0 0 4px #ffd700,0 5px 0 rgba(0,0,0,.45),0 0 25px rgba(255,215,0,.8),inset 0 -5px 10px rgba(0,0,0,.35),inset 0 5px 10px rgba(255,255,255,.4)}
+
+.bet-amount-display{background:linear-gradient(160deg,rgba(0,0,0,.5),rgba(20,40,70,.6));border:2px solid #ffd700;border-radius:14px;padding:14px;text-align:center;margin-bottom:14px;box-shadow:inset 0 3px 10px rgba(0,0,0,.5),0 0 20px rgba(255,215,0,.2)}
+.bet-amount-display .bad-my{font-size:11px;color:#a7f3d0;font-weight:900;letter-spacing:.5px}
+.bet-amount-display .bad-en{font-size:10px;color:#6b8fb5;font-weight:700;margin-bottom:6px}
+.bet-amount-display .bad-val{font-family:'Courier New',monospace;font-size:38px;font-weight:900;color:#ffd54a;line-height:1;text-shadow:0 0 20px rgba(255,213,74,.7),0 2px 4px rgba(0,0,0,.5)}
+.bet-amount-display .bad-val .unit{font-size:16px;margin-left:6px;color:#ffd54a;opacity:.8}
+.bet-amount-display .bad-warn{font-size:10px;color:#fca5a5;margin-top:6px;font-weight:900}
+
+.wallet-status{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.35);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:11px;border:1px solid #4a7bc8}
+.wallet-status .ws-left{display:flex;flex-direction:column}
+.wallet-status .ws-my{font-weight:900;color:#a7f3d0}
+.wallet-status .ws-en{font-size:9px;color:#6b8fb5;font-weight:700}
+.wallet-status .ws-val{font-size:16px;font-weight:900;color:#ffd54a;font-family:monospace}
+
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:12px;background:linear-gradient(160deg,#fbbf24,#f59e0b);color:#000;font-weight:900;font-size:12px;z-index:9999;box-shadow:0 5px 0 #5a2d04,0 8px 20px rgba(0,0,0,.5);border:2px solid #fde68a;max-width:80%;text-align:center;transition:opacity .3s,transform .3s;display:none;line-height:1.5}
+.toast.show{display:block;animation:ti .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes ti{0%{transform:translateX(-50%) translateY(-20px) scale(.8);opacity:0}100%{transform:translateX(-50%) translateY(0) scale(1);opacity:1}}
+
+@media (max-height:420px){
+  .header{height:48px;padding:4px 12px}
+  .logo-badge{width:36px;height:36px;font-size:20px;border-radius:10px}
+  .brand-text b{font-size:14px}
+  .brand-text small{font-size:9px}
+  .hpill{padding:4px 10px;font-size:11px}
+  .main-action{min-height:76px;padding:8px 6px}
+  .main-action .ma-ico{font-size:24px}
+  .main-action .ma-txt b{font-size:10px}
+  .main-action .ma-txt small{font-size:7.5px}
+  .game-head{height:38px}
+  .game-head .pill{padding:3px 7px;font-size:9px}
+  .pre-exit{width:28px;height:28px;font-size:12px}
+  .action-bar{padding:4px 8px 5px;gap:3px}
+  .chip-btn{aspect-ratio:auto;height:32px}
+  .chip-btn .cb-val{font-size:10px}
+  .chip-btn .cb-sub{display:none}
+  .ph-card{width:38px;height:54px}
+  .mini-card{width:24px;height:34px}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="bg-stage">
+    <div class="rays"></div>
+    <div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div>
+  </div>
+
+  <div class="header">
+    <div class="brand">
+      <div class="logo-badge">🃏</div>
+      <div class="brand-text">
+        <b>STUD POKER</b>
+        <small id="headerSub">ULTIMATE · 24-CARD · v8.2</small>
+      </div>
+    </div>
+    <div class="header-pills">
+      <div class="hpill"><span class="dot"></span>ONLINE <span id="onlineCount">12</span></div>
+      <div class="hpill">🪙 <span id="headerCoins">0</span></div>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <div class="screen active" id="screenHome">
+      <div class="home-wrap">
+        <div class="home-card">
+          <div class="home-title">STUD POKER</div>
+          <div class="home-sub">
+            24-Card Landscape Social Poker<br>
+            <span style="opacity:.7;font-size:11px">၂၄ ချပ် စတပ်ဖဲ · လူမှုကွန်ရက် ဂိမ်း</span>
+          </div>
+          <div class="home-buttons">
+            <button class="big-btn user" onclick="openUserLogin()">
+              <div class="ico">👤</div>
+              <div class="bi"><span class="bi-my">USER ဝင်မည်</span><span class="sub">Sign in as User</span></div>
+            </button>
+            <button class="big-btn admin" onclick="openAdminLogin()">
+              <div class="ico">⚙️</div>
+              <div class="bi"><span class="bi-my">SUPER ADMIN</span><span class="sub">Administrator Login</span></div>
+            </button>
+          </div>
+          <div class="home-note">
+            Virtual Coin System · Wave Pay Top-up · Admin Manages Coins<br>
+            Coin အစစ် · Super Admin မှ ရောင်းချသည် · ပွဲတစ်ပွဲ Rake ကောက်ခံ
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="screenUser">
+      <div class="dash-layout">
+        <div class="dash-main">
+          <div class="user-strip">
+            <div class="u-avatar" id="uAvatar">P</div>
+            <div class="u-info">
+              <b id="uName">Player</b>
+              <small id="uMeta">Level 1 · Ready to play</small>
+            </div>
+            <div class="u-coins"><div class="cicon">🪙</div><span id="uCoins">0</span></div>
+          </div>
+
+          <div class="zero-warn" id="zeroWarn">
+            ⚠️ Coin 0 ဖြစ်နေသည် · ကစားရန် Coin ဝယ်ပါ<br>
+            <span style="font-size:9px;opacity:.8">Your balance is 0 — please top up to play</span>
+          </div>
+
+          <div class="main-actions">
+            <button class="main-action play-real" onclick="openActiveTables()">
+              <div class="ma-ico">🎯</div>
+              <div class="ma-txt"><b>ကစားမည်</b><small>Coin အစစ် · Active Tables</small></div>
+            </button>
+            <button class="main-action find-players" onclick="openFindPlayers()">
+              <div class="ma-ico">👥</div>
+              <div class="ma-txt"><b>Online ရှာဖွေ</b><small>ကစားသမား ရှာဖွေ</small></div>
+            </button>
+            <button class="main-action demo-play" onclick="enterDemo()">
+              <div class="ma-ico">🎮</div>
+              <div class="ma-txt"><b>အစမ်းဆော့</b><small>Computer · 900K Free</small></div>
+            </button>
+          </div>
+
+          <div class="btn-grid">
+            <button class="grid-btn cyan" onclick="openBuyCoins()"><div class="g-ico">🪙</div><div class="g-label">Coin ဝယ်</div><div class="g-sub">Buy</div></button>
+            <button class="grid-btn purple" onclick="openWithdraw()"><div class="g-ico">💸</div><div class="g-label">Coin ထုတ်</div><div class="g-sub">Withdraw</div></button>
+            <button class="grid-btn gold" onclick="openWallet()"><div class="g-ico">💼</div><div class="g-label">Wallet</div><div class="g-sub">Balance</div></button>
+            <button class="grid-btn blue" onclick="openProfile()"><div class="g-ico">👤</div><div class="g-label">Profile</div><div class="g-sub">My Info</div></button>
+            <button class="grid-btn blue" onclick="openHistory()"><div class="g-ico">📜</div><div class="g-label">မှတ်တမ်း</div><div class="g-sub">History</div></button>
+            <button class="grid-btn teal" onclick="openEmoteShop()"><div class="g-ico">😊</div><div class="g-label">Emote ဆိုင်</div><div class="g-sub">Emotes</div></button>
+            <button class="grid-btn cyan" onclick="openRules()"><div class="g-ico">📖</div><div class="g-label">ကစားနည်း</div><div class="g-sub">Rules</div></button>
+            <button class="grid-btn red" onclick="doLogout()"><div class="g-ico">🚪</div><div class="g-label">ထွက်မယ်</div><div class="g-sub">Logout</div></button>
+          </div>
+        </div>
+
+        <aside class="dash-side">
+          <div class="side-title">📊 Stats <span style="font-size:9px;opacity:.6">· အချက်အလက်</span></div>
+          <div class="table-scroll">
+            <div class="quick-stat"><div class="qs-ico">🎮</div><div class="qs-txt"><small>Games</small><b>စုစုပေါင်း</b></div><div class="qs-val" id="qsGames">0</div></div>
+            <div class="quick-stat"><div class="qs-ico">🏆</div><div class="qs-txt"><small>Wins</small><b>အနိုင်ရ</b></div><div class="qs-val" style="color:#22c55e" id="qsWins">0</div></div>
+            <div class="quick-stat"><div class="qs-ico">😔</div><div class="qs-txt"><small>Losses</small><b>ရှုံး</b></div><div class="qs-val" style="color:#ef4444" id="qsLosses">0</div></div>
+            <div class="quick-stat"><div class="qs-ico">📈</div><div class="qs-txt"><small>Win Rate</small><b>အောင်နှုန်း</b></div><div class="qs-val" id="qsWinRate">0%</div></div>
+            <div class="quick-stat"><div class="qs-ico">😊</div><div class="qs-txt"><small>Emote Plan</small><b>Emote အခြေအနေ</b></div><div class="qs-val" id="qsEmote" style="color:#fbbf24">Free</div></div>
+            <div class="quick-stat"><div class="qs-ico">💼</div><div class="qs-txt"><small>Real Coins</small><b>Coin အစစ်</b></div><div class="qs-val" id="qsCoins">0</div></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="screen" id="screenAdmin">
+      <div class="dash-layout">
+        <div class="dash-main">
+          <div class="admin-stats">
+            <div class="stat-card"><small>👥 Users</small><b id="adminUsers">0</b></div>
+            <div class="stat-card"><small>🪙 Coins</small><b id="adminCoins">0</b></div>
+            <div class="stat-card"><small>📥 Buy</small><b id="adminBuyReq">0</b></div>
+            <div class="stat-card"><small>📤 WD</small><b id="adminWdReq">0</b></div>
+          </div>
+          <div class="btn-grid">
+            <button class="grid-btn blue" onclick="adminUsersList()"><div class="g-ico">👥</div><div class="g-label">Users</div><div class="g-sub">စာရင်း</div></button>
+            <button class="grid-btn gold" onclick="adminBuyRequests()"><div class="g-ico">🪙</div><div class="g-label">Buy Req</div><div class="g-sub">ဝယ်မှု</div></button>
+            <button class="grid-btn purple" onclick="adminWithdrawRequests()"><div class="g-ico">💸</div><div class="g-label">WD Req</div><div class="g-sub">ထုတ်မှု</div></button>
+            <button class="grid-btn green" onclick="adminSalesStats()"><div class="g-ico">📊</div><div class="g-label">Income</div><div class="g-sub">ဝင်ငွေ</div></button>
+            <button class="grid-btn cyan" onclick="adminGameHistory()"><div class="g-ico">📜</div><div class="g-label">History</div><div class="g-sub">သမိုင်း</div></button>
+            <button class="grid-btn teal" onclick="adminEmoteSales()"><div class="g-ico">😊</div><div class="g-label">Emotes</div><div class="g-sub">ရောင်းအား</div></button>
+            <button class="grid-btn cyan" onclick="adminSettings()"><div class="g-ico">⚙️</div><div class="g-label">Settings</div><div class="g-sub">Config</div></button>
+            <button class="grid-btn red" onclick="doLogout()"><div class="g-ico">🚪</div><div class="g-label">Logout</div><div class="g-sub">ထွက်</div></button>
+          </div>
+        </div>
+        <aside class="dash-side">
+          <div class="side-title">💼 Quick <span style="font-size:10px;opacity:.6">· မြန်ဆန်</span></div>
+          <div class="table-scroll">
+            <div class="list-item" onclick="adminBuyRequests()" style="cursor:pointer">
+              <div class="li-row"><span>🪙 Buy Requests</span><span id="adminBuyCount" style="color:#f97316">0</span></div>
+              <div class="li-meta">Pending</div>
+            </div>
+            <div class="list-item" onclick="adminWithdrawRequests()" style="cursor:pointer">
+              <div class="li-row"><span>💸 Withdraw</span><span id="adminWdCount" style="color:#f97316">0</span></div>
+              <div class="li-meta">Pending payout</div>
+            </div>
+            <div class="list-item">
+              <div class="li-row"><span>💰 Rake Income</span><span id="adminRake" style="color:#22c55e">0</span></div>
+              <div class="li-meta">Per-hand fee</div>
+            </div>
+            <div class="list-item">
+              <div class="li-row"><span>😊 Emote Income</span><span id="adminEmote" style="color:#fbbf24">0</span></div>
+              <div class="li-meta">Monthly subscriptions</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div class="screen" id="screenGame">
+      <div class="game-wrap">
+        <div class="game-head">
+          <div class="pill gold" id="gameRoom">🎯 TABLE</div>
+          <div class="pill demo" id="demoPill" style="display:none">🎮 DEMO</div>
+          <div class="pill diff" id="diffPill" style="display:none">🤖 <span id="diffVal">NORMAL</span></div>
+          <div class="pill timer" id="gameTimer" style="display:none">⏱ <span id="timerVal">15s</span></div>
+          <div class="pill rake">💼 <span id="rakeTotal">0</span></div>
+          <div class="pill gold">🪙 <span id="gameCoins">0</span></div>
+          <button class="pre-exit" id="preExitBtn" onclick="togglePreExit()">✕</button>
+        </div>
+
+        <!-- Peek banner — now at top of game-seats, no longer blocks cards -->
+        <div class="peek-banner" id="peekBanner">
+          <span id="peekBannerText">👆 ဖဲကို ဖိဆွဲကြည့်ပါ · Tap card to hide</span>
+        </div>
+
+        <div class="game-seats">
+          <!-- Dealing overlay for animation -->
+          <div class="dealing-overlay" id="dealingOverlay">
+            <div class="dealing-hand" id="dealingHand">🤵</div>
+          </div>
+
+          <!-- DEALER BADGE — top-left -->
+          <div class="dealer-badge">
+            <div class="db-av">👨‍💼</div>
+            <div class="db-txt">DEALER · ဒိုင်</div>
+          </div>
+
+          <!-- Opponent: TOP (Player 3) -->
+          <div class="seat s-top" id="seat3">
+            <div class="s-name" id="n3">-</div>
+            <div class="s-coins" id="c3">0</div>
+            <div class="s-bet" id="b3"></div>
+            <div class="s-cards" id="cd3"></div>
+          </div>
+          <!-- Opponent: LEFT (Player 2) -->
+          <div class="seat s-left" id="seat2">
+            <div class="s-name" id="n2">-</div>
+            <div class="s-coins" id="c2">0</div>
+            <div class="s-bet" id="b2"></div>
+            <div class="s-cards" id="cd2"></div>
+          </div>
+          <!-- Opponent: RIGHT (Player 4) -->
+          <div class="seat s-right" id="seat4">
+            <div class="s-name" id="n4">-</div>
+            <div class="s-coins" id="c4">0</div>
+            <div class="s-bet" id="b4"></div>
+            <div class="s-cards" id="cd4"></div>
+          </div>
+
+          <div class="center-pot">
+            <div class="pot-chips" id="potChips"></div>
+            <div class="pot-label">POT <span class="amt" id="potAmt">0</span></div>
+          </div>
+        </div>
+
+        <!-- Player seat as a flex child — always at the bottom -->
+        <div class="player-seat-outer">
+          <div class="player-seat" id="seat1">
+            <div class="ps-head">
+              <span class="ps-name" id="n1">You</span>
+              <span class="ps-bet" id="b1"></span>
+              <span class="ps-coins" id="c1">0</span>
+            </div>
+            <div class="player-hand" id="cd1"></div>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <div class="chat-log" id="chatLog"></div>
+
+          <div class="bet-display">
+            <span class="bd-lbl">💰 လောင်းကြေး / BET</span>
+            <span class="bd-val zero" id="betVal">0 🪙</span>
+          </div>
+
+          <div class="chips-row" id="chipsRow">
+            <button class="chip-btn c100" onclick="addChip(100)" data-amt="100"><span class="cb-val">100</span><span class="cb-sub">COIN</span></button>
+            <button class="chip-btn c200" onclick="addChip(200)" data-amt="200"><span class="cb-val">200</span><span class="cb-sub">COIN</span></button>
+            <button class="chip-btn c500" onclick="addChip(500)" data-amt="500"><span class="cb-val">500</span><span class="cb-sub">COIN</span></button>
+            <button class="chip-btn c1000" onclick="addChip(1000)" data-amt="1000"><span class="cb-val">1K</span><span class="cb-sub">COIN</span></button>
+            <button class="chip-btn c5000" onclick="addChip(5000)" data-amt="5000"><span class="cb-val">5K</span><span class="cb-sub">COIN</span></button>
+            <button class="chip-btn c10000" onclick="addChip(10000)" data-amt="10000"><span class="cb-val">10K</span><span class="cb-sub">COIN</span></button>
+            <button class="chip-btn allin" onclick="addAllIn()" data-amt="allin"><span class="cb-val">ALL</span><span class="cb-sub">IN</span></button>
+          </div>
+
+          <div class="action-row">
+            <button class="act-btn act-clear" id="btnClear" onclick="clearBet()" disabled>
+              <span class="b1">🗑 ဖျက်</span><span class="b2">CLEAR</span>
+            </button>
+            <button class="act-btn act-fold" id="btnFold" onclick="gameAction('fold')" disabled>
+              <span class="b1">❌ ဖိုး</span><span class="b2">FOLD</span>
+            </button>
+            <button class="act-btn act-call" id="btnCall" onclick="gameAction('call')" disabled>
+              <span class="b1">✅ လိုက်</span><span class="b2">CALL <span id="callAmt">0</span></span>
+            </button>
+            <button class="act-btn act-raise" id="btnRaise" onclick="gameAction('raise')" disabled>
+              <span class="b1">⬆ ခေါ်</span><span class="b2">RAISE</span>
+            </button>
+          </div>
+
+          <div class="social-bar">
+            <button class="social-btn shop" onclick="openEmoteShop()" title="Emote Shop">🛒</button>
+            <button class="social-btn emo" onclick="openEmotePicker('emote')" title="Emoticon">😊</button>
+            <button class="social-btn interact" onclick="openEmotePicker('interact')" title="Interact">👋</button>
+            <input id="chatInput" maxlength="60" placeholder="မက်ဆေ့ချ် ရိုက်ပါ... / Type a message" onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="social-btn send" onclick="sendChat()">➤</button>
+          </div>
+        </div>
+
+        <div class="intermission" id="intermission" style="display:none">
+          <div class="im-title">🎉 ပွဲပြီးပါပြီ</div>
+          <div class="im-sub">နောက်ပွဲ စတင်ရန် စောင့်ဆိုင်းနေသည်<br><span style="font-size:10px;opacity:.7">Next hand starting soon</span></div>
+          <div class="im-timer" id="imTimer">
+            <div class="im-val"><span id="imCount">30</span><small>SEC</small></div>
+          </div>
+          <div class="im-sub" style="color:#fca5a5;font-size:11px">⏰ အချိန်ကုန်ပါက Auto ထွက်ခွါမည်<br><span style="font-size:10px;opacity:.7">Auto-exit if no action</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="modal-box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+var ADMIN_PIN = '1234';
+var DEFAULT_SETTINGS = { waveNumber: '09769261077', waveName: 'STUD POKER ADMIN', rakePerHand: 50, minWithdraw: 5000, coinRate: 1 };
+var DEMO_START = 900000;
+var STORAGE_KEY = 'stud_poker_v8';
+var BET_TIME = 15;
+var INTERMISSION_TIME = 30;
+var MAX_ROUNDS = 4;
+var INITIAL_VIEW_TIMEOUT = 30; // fallback if no user action
+
+var EMOTE_PACKS = [
+  { id: 'basic',   emoji: '😊', name: 'Basic',     en: 'အခြေခံ',      price: 100,   emotes: ['😊','😂','😍','😎','🤔'] },
+  { id: 'cool',    emoji: '😎', name: 'Cool',      en: 'အေးဆေး',      price: 500,   emotes: ['😎','🕶️','🔥','💯','👊'] },
+  { id: 'animal',  emoji: '🐶', name: 'Animals',   en: 'တိရစ္ဆာန်',    price: 1000,  emotes: ['🐶','🐱','🐼','🦊','🦁'] },
+  { id: 'royal',   emoji: '👑', name: 'Royal',     en: 'ဘုရင်ဆန်',     price: 2500,  emotes: ['👑','💎','🏆','💰','⭐'] },
+  { id: 'love',    emoji: '❤️', name: 'Love',      en: 'အချစ်',        price: 3000,  emotes: ['❤️','😘','💕','🌹','😻'] },
+  { id: 'pro',     emoji: '🎯', name: 'Pro Player',en: 'ပရော',        price: 5000,  emotes: ['🎯','🎰','🃏','♠️','🔥'] },
+  { id: 'legend',  emoji: '🐉', name: 'Legendary', en: 'ဒဏ္ဍာရီ',      price: 8000,  emotes: ['🐉','⚡','🌟','👽','🎇'] },
+  { id: 'mythic',  emoji: '🔥', name: 'Mythic',    en: 'အထွတ်အထိပ်',   price: 10000, emotes: ['🔥','💥','🌪️','🌈','✨'] }
+];
+var INTERACT_EMOTES = ['👋','👏','👍','🙏','💪','🎉','🍀','👊'];
+
+var S = {
+  users: {}, current: null,
+  buyRequests: [], withdrawRequests: [], emotePurchases: [],
+  gameHistory: [], rakeIncome: [],
+  settings: Object.assign({}, DEFAULT_SETTINGS),
+  games: 0
+};
+
+var G = {
+  ante: 100, demo: false, difficulty: 'normal',
+  players: [], pot: 0, hand: 0, round: 0, deck: [],
+  phase: 'idle', phaseTimer: null, phaseVal: 0,
+  preExitQueued: false, autoExitTimer: null, intermissionTimer: null,
+  justDealt: false,
+  currentBet: 0, myBetTotal: 0, highestBet: 0,
+  selectedHiddenIdx: -1, hasSelectedHidden: false,
+  bots: ['Aung', 'Hla', 'Zaw', 'SuSu', 'MgMg', 'Nilar', 'KoKo', 'Mya Mya']
+};
+
+var RANKS = ['9','10','J','Q','K','A'];
+var SUITS = ['♠','♥','♦','♣'];
+
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      var p = JSON.parse(raw);
+      S.users = p.users || {};
+      S.current = p.current || null;
+      S.buyRequests = p.buyRequests || [];
+      S.withdrawRequests = p.withdrawRequests || [];
+      S.emotePurchases = p.emotePurchases || [];
+      S.gameHistory = p.gameHistory || [];
+      S.rakeIncome = p.rakeIncome || [];
+      S.settings = Object.assign({}, DEFAULT_SETTINGS, p.settings || {});
+      S.games = p.games || 0;
+    }
+  }catch(e){ console.error(e); }
+  Object.keys(S.users).forEach(function(uid){
+    var u = S.users[uid];
+    if(!u) return;
+    if(typeof u.demoCoins !== 'number' || u.demoCoins <= 0) u.demoCoins = DEMO_START;
+    if(typeof u.coins !== 'number') u.coins = 0;
+    if(typeof u.wins !== 'number') u.wins = 0;
+    if(typeof u.losses !== 'number') u.losses = 0;
+    if(typeof u.games !== 'number') u.games = 0;
+  });
+}
+function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }catch(e){} }
+
+function $(id){ return document.getElementById(id); }
+function fmt(n){ return Number(n||0).toLocaleString('en-US'); }
+function genId(p){ return (p||'id') + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s||'').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function toast(msg){
+  var t = $('toast');
+  t.innerHTML = msg;
+  t.classList.remove('show'); void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+function openModal(html){ $('modalBox').innerHTML = html; $('modal').classList.add('active'); }
+function closeModal(){ $('modal').classList.remove('active'); $('modalBox').innerHTML = ''; }
+$('modal').addEventListener('click', function(e){ if(e.target.id === 'modal') closeModal(); });
+function showScreen(id){ document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); }); $(id).classList.add('active'); }
+
+function openUserLogin(){
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>👤</span><div><span>User Login</span><span class="bi-en">အသုံးပြုသူ ဝင်ရောက်ခြင်း</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">အမည်</span><span class="bi-en">Username</span></div>' +
+      '<input class="form-input" id="inpName" maxlength="20" placeholder="ဥပမာ: မောင်မောင်"></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">ဖုန်းနံပါတ်</span><span class="bi-en">Phone</span></div>' +
+      '<input class="form-input mono" id="inpPhone" maxlength="11" inputmode="numeric" placeholder="09xxxxxxxxx"></div>' +
+    '<div class="warn-box" style="border-color:#fbbf24;background:linear-gradient(160deg,rgba(251,191,36,.2),rgba(180,83,9,.2));color:#fde68a">' +
+      '⚠️ အကောင့်အသစ် Coin 0 ဖြင့် စတင်မည်<br>🎮 အစမ်းဆော့ရန် <b>900,000 Demo Coin</b> အခမဲ့</div>' +
+    '<button class="form-btn green" onclick="doUserLogin()"><span>✅ ဝင်မည်</span><span class="bi-en">Sign In</span></button>'
+  );
+  setTimeout(function(){ $('inpName').focus(); }, 200);
+}
+function doUserLogin(){
+  var name = $('inpName').value.trim();
+  var phone = $('inpPhone').value.trim();
+  if(!name){ toast('⚠️ အမည် ဖြည့်ပါ'); return; }
+  if(!phone || phone.length < 7){ toast('⚠️ ဖုန်းနံပါတ် ဖြည့်ပါ'); return; }
+  var uid = 'u-' + phone.replace(/\D/g,'');
+  if(!S.users[uid]){
+    S.users[uid] = { id: uid, name: name, phone: phone, coins: 0, demoCoins: DEMO_START, wins: 0, losses: 0, games: 0, createdAt: Date.now() };
+  } else {
+    S.users[uid].name = name;
+    if(typeof S.users[uid].demoCoins !== 'number' || S.users[uid].demoCoins <= 0) S.users[uid].demoCoins = DEMO_START;
+  }
+  S.current = uid;
+  saveState();
+  closeModal();
+  showUserDashboard();
+  toast('✅ Welcome <b>' + esc(name) + '</b>');
+}
+function openAdminLogin(){
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>⚙️</span><div><span>Super Admin</span><span class="bi-en">အုပ်ချုပ်သူ</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">Passcode</span><span class="bi-en">PIN</span></div>' +
+      '<input class="form-input mono" id="inpAdmin" type="password" maxlength="8" placeholder="••••"></div>' +
+    '<div class="info-steps" style="font-size:10px;border-left-color:#a855f7">Demo Passcode: <b style="color:#ffd54a">1234</b></div>' +
+    '<button class="form-btn purple" onclick="doAdminLogin()"><span>🔓 Login</span><span class="bi-en">ဝင်မည်</span></button>'
+  );
+  setTimeout(function(){ $('inpAdmin').focus(); }, 200);
+}
+function doAdminLogin(){
+  var pin = $('inpAdmin').value.trim();
+  if(pin !== ADMIN_PIN){ toast('❌ Passcode မှားသည်'); return; }
+  S.current = 'admin';
+  saveState();
+  closeModal();
+  showAdminDashboard();
+  toast('🔓 Admin login success');
+}
+function doLogout(){
+  if(!confirm('Logout / ထွက်မှာလား?')) return;
+  S.current = null;
+  saveState();
+  showScreen('screenHome');
+  $('headerCoins').textContent = '0';
+  $('headerSub').textContent = 'ULTIMATE · 24-CARD · v8.2';
+}
+
+function showUserDashboard(){
+  var u = S.users[S.current];
+  if(!u){ showScreen('screenHome'); return; }
+  if(typeof u.demoCoins !== 'number' || u.demoCoins <= 0){ u.demoCoins = DEMO_START; saveState(); }
+
+  $('uAvatar').textContent = (u.name.charAt(0) || 'P').toUpperCase();
+  $('uName').textContent = u.name;
+  $('uMeta').textContent = u.phone + ' · Level 1';
+  $('uCoins').textContent = fmt(u.coins);
+  $('headerCoins').textContent = fmt(u.coins);
+  $('headerSub').textContent = 'USER · ' + u.name;
+  $('zeroWarn').classList.toggle('show', u.coins <= 0);
+
+  $('qsGames').textContent = u.games || 0;
+  $('qsWins').textContent = u.wins || 0;
+  $('qsLosses').textContent = u.losses || 0;
+  var total = (u.wins || 0) + (u.losses || 0);
+  var rate = total > 0 ? Math.round((u.wins / total) * 100) : 0;
+  $('qsWinRate').textContent = rate + '%';
+  $('qsCoins').textContent = fmt(u.coins);
+
+  var emoteStatus = 'Free';
+  var now = Date.now();
+  var active = S.emotePurchases.filter(function(p){ return p.userId === u.id && p.expiresAt > now; });
+  if(active.length){
+    var best = active.sort(function(a,b){ return b.expiresAt - a.expiresAt; })[0];
+    var days = Math.ceil((best.expiresAt - now) / (1000*60*60*24));
+    emoteStatus = '📦 ' + days + 'd';
+  }
+  $('qsEmote').textContent = emoteStatus;
+
+  showScreen('screenUser');
+}
+function showAdminDashboard(){
+  refreshAdminStats();
+  showScreen('screenAdmin');
+  $('headerCoins').textContent = '—';
+  $('headerSub').textContent = 'SUPER ADMIN';
+}
+function refreshAdminStats(){
+  var userArr = Object.values(S.users);
+  var totalCoins = userArr.reduce(function(s,u){ return s + (u.coins || 0); }, 0);
+  var pendingBuy = S.buyRequests.filter(function(r){ return r.status === 'pending'; }).length;
+  var pendingWd = S.withdrawRequests.filter(function(r){ return r.status === 'pending'; }).length;
+  var totalRake = S.rakeIncome.reduce(function(s,r){ return s + r.amount; }, 0);
+  var emoteIncome = S.emotePurchases.reduce(function(s,p){ return s + p.price; }, 0);
+  $('adminUsers').textContent = userArr.length;
+  $('adminCoins').textContent = fmt(totalCoins);
+  $('adminBuyReq').textContent = pendingBuy;
+  $('adminWdReq').textContent = pendingWd;
+  $('adminBuyCount').textContent = pendingBuy;
+  $('adminWdCount').textContent = pendingWd;
+  $('adminRake').textContent = fmt(totalRake);
+  $('adminEmote').textContent = fmt(emoteIncome);
+}
+
+var DEMO_TABLES = [
+  { id: 't100',   name: 'Beginner',    ante: 100,   players: 2, maxPlayers: 4, locked: false },
+  { id: 't500',   name: 'Standard',    ante: 500,   players: 3, maxPlayers: 4, locked: false },
+  { id: 't1000',  name: 'Advanced',    ante: 1000,  players: 1, maxPlayers: 4, locked: false },
+  { id: 't5000',  name: 'VIP Room',    ante: 5000,  players: 2, maxPlayers: 4, locked: false },
+  { id: 't10000', name: 'High Roller', ante: 10000, players: 2, maxPlayers: 2, locked: true }
+];
+
+function openActiveTables(){
+  var user = S.users[S.current];
+  if(!user) return;
+  if(user.coins <= 0){
+    toast('⚠️ Coin မရှိပါ · Coin အရင်ဝယ်ပါ');
+    return;
+  }
+  var html = '<div class="modal-head"><div class="modal-title"><span>🎯</span>' +
+    '<div><span>Active Tables</span><span class="bi-en">Coin အစစ် ကစားပွဲများ</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+  html += '<div class="info-steps" style="border-left-color:#22c55e">' +
+    '💰 <b>Coin အစစ်</b> — Rake ' + fmt(S.settings.rakePerHand) + ' 🪙 / player / hand<br>' +
+    '<span style="font-size:10px;opacity:.8">Real coins · Dealer rake per hand</span></div>';
+  html += '<div class="list-scroll">';
+  for(var i = 0; i < DEMO_TABLES.length; i++){
+    var t = DEMO_TABLES[i];
+    var canPlay = user.coins >= t.ante * 2 && t.players < t.maxPlayers;
+    var dotClass = t.players < t.maxPlayers ? '' : 'busy';
+    html += '<div class="table-card">' +
+      '<div class="tc-head">' +
+        '<div class="tc-name">🎯 ' + esc(t.name) + (t.locked ? ' 🔒' : '') + '</div>' +
+        '<div class="tc-ante">' + fmt(t.ante) + ' 🪙</div>' +
+      '</div>' +
+      '<div class="tc-meta">' +
+        '<div class="tc-players"><span class="tc-dot ' + dotClass + '"></span> ' + t.players + ' / ' + t.maxPlayers + '</div>' +
+        '<div>' + (t.locked ? '🔒 Locked (2P only)' : 'Open seats') + '</div>' +
+      '</div>' +
+      '<button class="tc-join" ' + (canPlay ? '' : 'disabled') + ' onclick="closeModal();openBetSelect(' + t.ante + ')">' +
+        (canPlay ? '➕ ဝင်မယ် / Join' : (t.players >= t.maxPlayers ? '🔒 Table Full' : '🔒 Need ' + fmt(t.ante * 2) + ' 🪙')) +
+      '</button></div>';
+  }
+  html += '</div>' +
+    '<button class="form-btn red" style="margin-top:14px" onclick="closeModal()"><span>← ပိတ်</span><span class="bi-en">Close</span></button>';
+  openModal(html);
+}
+
+var ONLINE_PLAYERS = [
+  { name: 'Aung Ko',   level: 5, status: 'free', coins: '15,000' },
+  { name: 'Hla Hla',   level: 3, status: 'free', coins: '8,500' },
+  { name: 'Su Su',     level: 2, status: 'free', coins: '4,200' },
+  { name: 'Nilar',     level: 4, status: 'free', coins: '12,000' },
+  { name: 'Ko Ko',     level: 6, status: 'free', coins: '18,000' },
+  { name: 'Mya Mya',   level: 1, status: 'free', coins: '2,100' },
+  { name: 'Thida',     level: 5, status: 'free', coins: '16,500' },
+  { name: 'Zaw Zaw',   level: 7, status: 'busy', coins: '25,000' },
+  { name: 'Mg Mg',     level: 9, status: 'busy', coins: '50,000' },
+  { name: 'Kyaw Kyaw', level: 8, status: 'busy', coins: '35,000' }
+];
+function openFindPlayers(){
+  var user = S.users[S.current];
+  if(!user) return;
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>👥</span>' +
+      '<div><span>Searching...</span><span class="bi-en">ကစားသမား ရှာဖွေနေသည်</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="search-anim"><div class="sa-ring"></div>' +
+      '<div class="sa-txt">🔍 Online ကစားသမားများ ရှာဖွေနေသည်...<small>Scanning for online players</small></div></div>'
+  );
+  setTimeout(function(){
+    if(!$('modal').classList.contains('active')) return;
+    renderPlayersList();
+  }, 1400);
+}
+function renderPlayersList(){
+  var sorted = ONLINE_PLAYERS.slice().sort(function(a,b){
+    if(a.status === b.status) return 0;
+    return a.status === 'free' ? -1 : 1;
+  });
+  var freeCount = sorted.filter(function(p){ return p.status === 'free'; }).length;
+  var html = '<div class="modal-head"><div class="modal-title"><span>👥</span>' +
+    '<div><span>Online Players</span><span class="bi-en">ကစားသမား ရှာဖွေရန်</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+  html += '<div class="info-steps" style="border-left-color:#3b82f6">' +
+    '🔍 <b>' + sorted.length + ' ဦး</b> Online · <b style="color:#22c55e">' + freeCount + ' ဦး</b> အဆင်သင့်<br>' +
+    '<span style="font-size:10px;opacity:.8">Tap Invite to send game request</span></div>';
+  html += '<div class="list-scroll">';
+  for(var i = 0; i < sorted.length; i++){
+    var p = sorted[i];
+    var isBusy = p.status === 'busy';
+    html += '<div class="player-card">' +
+      '<div class="pc-avatar online">' + esc(p.name.charAt(0)) + '</div>' +
+      '<div class="pc-txt"><b>' + esc(p.name) + ' · Lv.' + p.level + '</b><small>💰 ' + p.coins + ' 🪙</small></div>' +
+      '<div class="pc-status ' + (isBusy ? 'busy' : '') + '">' + (isBusy ? '⏳ In Game' : '🟢 Free') + '</div>' +
+      '<button class="pc-invite" ' + (isBusy ? 'disabled' : '') + ' onclick="invitePlayer(' + i + ')">' +
+        (isBusy ? 'Busy' : '👋 Invite') + '</button></div>';
+  }
+  html += '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">' +
+    '<button class="form-btn blue" onclick="refreshPlayers()"><span>🔄 ပြန်ရှာ</span><span class="bi-en">Refresh</span></button>' +
+    '<button class="form-btn red" onclick="closeModal()"><span>✖️ ပိတ်</span><span class="bi-en">Close</span></button></div>';
+  window._sortedPlayers = sorted;
+  openModal(html);
+}
+function invitePlayer(idx){
+  var p = (window._sortedPlayers || ONLINE_PLAYERS)[idx];
+  if(!p) return;
+  toast('📨 <b>' + esc(p.name) + '</b> ကို ဖိတ်ခေါ်လိုက်သည်');
+}
+function refreshPlayers(){ closeModal(); setTimeout(openFindPlayers, 200); }
+
+function enterDemo(){
+  var user = S.users[S.current];
+  if(!user) return;
+  user.demoCoins = DEMO_START;
+  saveState();
+  openDifficultySelect();
+}
+function openDifficultySelect(){
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>🎮</span>' +
+      '<div><span>Computer Level ရွေးပါ</span><span class="bi-en">Choose Difficulty</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="warn-box" style="border-color:#fbbf24;background:linear-gradient(160deg,rgba(251,191,36,.2),rgba(180,83,9,.2));color:#fde68a">' +
+      '🎮 အစမ်းဆော့ရန် <b>900,000 Demo Coin</b> အခမဲ့<br>' +
+      '<span style="font-size:10px;opacity:.8">Coin အစစ်နှင့် လုံးဝ မသက်ဆိုင်ပါ</span></div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+      '<button class="diff-btn normal" onclick="startDemoWithDifficulty(\'normal\')">' +
+        '<div class="diff-ico">🤖</div><div class="diff-name">NORMAL</div>' +
+        '<div class="diff-en">သာမန် · Easy</div>' +
+        '<div class="diff-meta">• ဖိုး 28%<br>• ခေါ် 30%</div></button>' +
+      '<button class="diff-btn hard" onclick="startDemoWithDifficulty(\'hard\')">' +
+        '<div class="diff-ico">👹</div><div class="diff-name">HARD</div>' +
+        '<div class="diff-en">ခက်ခဲ · Tough</div>' +
+        '<div class="diff-meta">• ဖိုး 12%<br>• ခေါ် 55%</div></button></div>' +
+    '<button class="form-btn red" style="margin-top:14px" onclick="closeModal()"><span>✖️ ပယ်</span><span class="bi-en">Cancel</span></button>'
+  );
+}
+function startDemoWithDifficulty(diff){
+  closeModal();
+  G.difficulty = diff;
+  toast('🎮 <b>' + diff.toUpperCase() + '</b> mode · Demo ' + fmt(DEMO_START));
+  openBetSelect(null, true);
+}
+
+var selectedBet = 0;
+var betSelectDemo = false;
+var ANTES = [100, 500, 1000, 5000, 10000, 50000];
+
+function openBetSelect(presetAnte, isDemo){
+  var user = S.users[S.current];
+  if(!user) return;
+  betSelectDemo = !!isDemo;
+  if(betSelectDemo){
+    user.demoCoins = DEMO_START;
+    saveState();
+    if(!G.difficulty) G.difficulty = 'normal';
+  } else {
+    G.difficulty = 'normal';
+  }
+  selectedBet = presetAnte || 0;
+  var balance = betSelectDemo ? DEMO_START : (user.coins || 0);
+
+  var html = '<div class="modal-head"><div class="modal-title">' +
+    '<span>' + (betSelectDemo ? '🎮' : '🎯') + '</span>' +
+    '<div><span>' + (betSelectDemo ? 'Demo Ante ရွေးပါ' : 'Ante ရွေးပါ') + '</span>' +
+    '<span class="bi-en">' + (betSelectDemo ? 'Demo Ante' : 'Select Ante') + '</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+
+  if(betSelectDemo){
+    html += '<div class="warn-box" style="border-color:#fbbf24;background:linear-gradient(160deg,rgba(251,191,36,.2),rgba(180,83,9,.2));color:#fde68a">' +
+      '🎮 Computer: <b>' + (G.difficulty || 'normal').toUpperCase() + '</b> · Demo Only</div>';
+  }
+
+  html += '<div class="wallet-status">' +
+    '<div class="ws-left"><span class="ws-my">' + (betSelectDemo ? '🎮 Demo Coin' : 'သင့် Coin') + '</span>' +
+    '<span class="ws-en">' + (betSelectDemo ? 'Fresh on every entry' : 'Available balance') + '</span></div>' +
+    '<div class="ws-val">🪙 <span id="bs-balance">' + fmt(balance) + '</span></div></div>';
+
+  html += '<div style="font-size:11px;color:#a7f3d0;font-weight:900;margin-bottom:8px">🎯 Ante ရွေးပါ <div style="font-size:10px;color:#6b8fb5;font-weight:700;margin-top:2px">Select the entry fee</div></div>';
+
+  html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">';
+  for(var i = 0; i < ANTES.length; i++){
+    var a = ANTES[i];
+    var cls = a >= 50000 ? 'c10000' : ('c' + a);
+    html += '<button class="bet-chip ' + cls + '" onclick="selectAnte(' + a + ')" data-ante="' + a + '" style="border-radius:12px;aspect-ratio:1.4">' +
+      '<span class="bc-val">' + (a >= 1000 ? (a/1000)+'K' : fmt(a)) + '</span><span class="bc-sub">ANTE</span></button>';
+  }
+  html += '</div>';
+
+  html += '<div class="bet-amount-display">' +
+    '<div class="bad-my">Ante လောင်းကြေး</div>' +
+    '<div class="bad-en">Entry fee</div>' +
+    '<div class="bad-val" id="betAmountVal">0<span class="unit">🪙</span></div>' +
+    '<div class="bad-warn" id="betWarn" style="display:none"></div></div>';
+
+  html += betSelectDemo
+    ? '<div class="info-steps" style="border-left-color:#fbbf24;font-size:10px;line-height:1.7">🎮 Demo ပွဲ — Coin အစစ် မကောက်ခံပါ<br>💼 Rake မကောက်ခံပါ</div>'
+    : '<div class="info-steps" style="border-left-color:#f97316;font-size:10px;line-height:1.7">💰 Coin အစစ် — Entry ကောက်ခံမည်<br>💼 ပွဲတိုင်း Rake ' + fmt(S.settings.rakePerHand) + ' 🪙 / player</div>';
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+    '<button class="form-btn red" onclick="closeModal()"><span>✖️ ပယ်</span><span class="bi-en">Cancel</span></button>' +
+    '<button class="form-btn green" id="btnStartGame" onclick="confirmBetAndStart()" disabled><span>▶️ စတင်</span><span class="bi-en">Start</span></button></div>';
+
+  openModal(html);
+  if(presetAnte) selectAnte(presetAnte);
+}
+
+function selectAnte(amount){
+  var user = S.users[S.current];
+  if(!user) return;
+  var balance = betSelectDemo ? DEMO_START : (user.coins || 0);
+  if(balance < amount * 2){ toast('⚠️ Coin မလုံလောက်ပါ'); return; }
+  selectedBet = amount;
+  document.querySelectorAll('.bet-chip').forEach(function(el){ el.classList.remove('selected'); });
+  var el = document.querySelector('.bet-chip[data-ante="' + amount + '"]');
+  if(el) el.classList.add('selected');
+  $('betAmountVal').innerHTML = fmt(amount) + '<span class="unit">🪙</span>';
+  var warn = $('betWarn');
+  var remaining = balance - amount;
+  warn.style.display = 'block';
+  warn.style.color = remaining >= amount ? '#a7f3d0' : '#fca5a5';
+  warn.innerHTML = (betSelectDemo ? 'Demo Coin ကျန်: ' : 'စတင်ပြီးနောက် Coin: ') + fmt(remaining);
+  $('btnStartGame').disabled = false;
+}
+
+function confirmBetAndStart(){
+  var user = S.users[S.current];
+  if(!user || !selectedBet){ toast('⚠️ Ante ရွေးပါ'); return; }
+  var balance = betSelectDemo ? DEMO_START : (user.coins || 0);
+  if(balance < selectedBet * 2){ toast('⚠️ Coin မလုံလောက်ပါ'); return; }
+  var demo = betSelectDemo;
+  var diff = demo ? (G.difficulty || 'normal') : 'normal';
+  closeModal();
+  startGameWithBet(selectedBet, demo, diff);
+}
+
+function buildDeck(){
+  var d = [];
+  for(var s = 0; s < 4; s++)
+    for(var r = 0; r < 6; r++)
+      d.push(RANKS[r] + SUITS[s]);
+  for(var i = d.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = d[i]; d[i] = d[j]; d[j] = tmp;
+  }
+  return d;
+}
+
+function startGameWithBet(ante, isDemo, diff){
+  var user = S.users[S.current];
+  if(!user) return;
+
+  G.demo = !!isDemo;
+  G.difficulty = diff || 'normal';
+  G.ante = ante;
+  G.hand = 0;
+  G.pot = 0;
+  G.preExitQueued = false;
+  clearTimeout(G.autoExitTimer);
+  clearInterval(G.intermissionTimer);
+  updatePreExitUI();
+
+  var myCoins;
+  if(G.demo){ user.demoCoins = DEMO_START; myCoins = DEMO_START; }
+  else myCoins = user.coins;
+
+  var shuffledBots = G.bots.slice().sort(function(){ return Math.random() - 0.5; });
+
+  G.players = [
+    { seat: 1, name: user.name, isMe: true,  coins: myCoins, cards: [], folded: false, bet: 0, hand: 'HIGH CARD' },
+    { seat: 2, name: shuffledBots[0], isMe: false, coins: 50000, cards: [], folded: false, bet: 0, hand: 'HIGH CARD' },
+    { seat: 3, name: shuffledBots[1], isMe: false, coins: 50000, cards: [], folded: false, bet: 0, hand: 'HIGH CARD' },
+    { seat: 4, name: shuffledBots[2], isMe: false, coins: 50000, cards: [], folded: false, bet: 0, hand: 'HIGH CARD' }
+  ];
+
+  $('gameRoom').textContent = (G.demo ? '🎮 DEMO · Ante ' : '🎯 Ante ') + fmt(ante);
+  $('demoPill').style.display = G.demo ? '' : 'none';
+  if(G.demo){
+    $('diffPill').style.display = '';
+    $('diffVal').textContent = G.difficulty.toUpperCase();
+    $('diffPill').classList.toggle('hard', G.difficulty === 'hard');
+  } else {
+    $('diffPill').style.display = 'none';
+  }
+  $('gameCoins').textContent = fmt(G.players[0].coins);
+  $('rakeTotal').textContent = '0';
+
+  clearChat();
+  saveState();
+  showScreen('screenGame');
+  startNewHand();
+}
+
+function startNewHand(){
+  G.hand++;
+  G.pot = 0;
+  G.round = 0;
+  G.justDealt = true;
+  G.currentBet = 0;
+  G.myBetTotal = 0;
+  G.highestBet = 0;
+  G.selectedHiddenIdx = -1;
+  G.hasSelectedHidden = false;
+  G.deck = buildDeck();
+
+  G.players.forEach(function(p){
+    p.cards = []; p.folded = false; p.bet = 0; p.hand = 'HIGH CARD';
+  });
+
+  var u = S.users[S.current];
+  G.players[0].coins = G.demo ? DEMO_START : (u.coins || 0);
+
+  G.players.forEach(function(p){
+    var ante = G.ante;
+    if(p.coins >= ante){ p.coins -= ante; p.bet = ante; G.pot += ante; }
+  });
+
+  for(var r = 0; r < 2; r++){
+    for(var i = 0; i < 4; i++) G.players[i].cards.push(G.deck.pop());
+  }
+
+  if(G.demo) u.demoCoins = G.players[0].coins;
+  else u.coins = G.players[0].coins;
+  saveState();
+
+  updateGameUI();
+  G.justDealt = false;
+  updateBetDisplay();
+
+  // ✅ Play the dealing animation
+  playDealAnimation(function(){
+    // After deal animation, enter view phase (NO TIMER — user peeks freely)
+    G.phase = 'view';
+    showPeekBanner(true, '👆 ဖဲထောင့်မှ ဖိ၍ ဆွဲလှန်ကြည့်ပါ · သို့မဟုတ် ဖဲနှိပ်၍ မှောက်ဖဲရွေးပါ');
+    setControlsDisabled(true);
+    toast('👁 ဖဲကို ဖိဆွဲကြည့်ပါ<br><span style="font-size:10px">Drag to peek · Tap to hide</span>');
+
+    // Fallback: if user takes too long, auto-advance
+    startPhaseTimer(INITIAL_VIEW_TIMEOUT, 'view', function(){
+      // Auto-pick the first card as hidden if user did nothing
+      if(!G.hasSelectedHidden) pickHiddenCard(0);
+    });
+  });
+}
+
+function playDealAnimation(onComplete){
+  var overlay = $('dealingOverlay');
+  var hand = $('dealingHand');
+  if(!overlay || !hand){ if(onComplete) onComplete(); return; }
+  overlay.classList.add('active');
+
+  var seats = [
+    { left: '50%', top: '5%' },   // Top seat (player 3)
+    { left: '12%', top: '55%' },  // Left (player 2)
+    { left: '88%', top: '55%' },  // Right (player 4)
+    { left: '50%', top: '85%' }   // Bottom (player 1)
+  ];
+  var startPos = { left: '4%', top: '4%' };
+
+  hand.style.left = startPos.left;
+  hand.style.top = startPos.top;
+  hand.style.opacity = '1';
+
+  var i = 0;
+  function nextDeal(){
+    if(i >= seats.length){
+      hand.style.opacity = '0';
+      overlay.classList.remove('active');
+      setTimeout(function(){ if(onComplete) onComplete(); }, 200);
+      return;
+    }
+    hand.style.left = seats[i].left;
+    hand.style.top = seats[i].top;
+    i++;
+    setTimeout(nextDeal, 350);
+  }
+  setTimeout(nextDeal, 100);
+}
+
+function pickHiddenCard(idx){
+  if(G.hasSelectedHidden) return;
+  G.selectedHiddenIdx = idx;
+  G.hasSelectedHidden = true;
+  updateGameUI();
+  toast('✅ မှောက်ဖဲ ရွေးပြီး · ဒိုင်မှ ဆက်ဝေမည်');
+  // Short delay then go to betting
+  setTimeout(beginBettingPhase, 600);
+}
+
+function beginBettingPhase(){
+  stopPhaseTimer();
+  G.phase = 'bet';
+  G.round++;
+  updateGameUI();
+  showPeekBanner(true, '💰 လောင်းကြေး ခေါ်ပါ · 15 စက္ကန့်');
+  setControlsDisabled(false);
+  updateBetDisplay();
+  startPhaseTimer(BET_TIME, 'bet', function(){
+    toast('⏰ အချိန်ကုန် · Auto Bet');
+    gameAction('call');
+  });
+}
+
+function updateGameUI(){
+  for(var i = 0; i < 4; i++){
+    var p = G.players[i];
+    var sn = p.seat;
+    $('n' + sn).textContent = p.name + (p.isMe ? ' (You)' : '');
+    $('c' + sn).textContent = fmt(p.coins);
+    var betEl = $('b' + sn);
+    if(p.bet > 0){ betEl.textContent = '🎯 ' + fmt(p.bet); betEl.classList.add('show'); }
+    else betEl.classList.remove('show');
+
+    var cardHtml = '';
+    if(p.isMe){
+      cardHtml = buildMyHand();
+    } else {
+      for(var c = 0; c < p.cards.length; c++){
+        if(c === 0) cardHtml += miniCardBack();
+        else cardHtml += miniCardFace(p.cards[c]);
+      }
+    }
+    $('cd' + sn).innerHTML = cardHtml;
+  }
+  $('potAmt').textContent = fmt(G.pot);
+  $('potChips').innerHTML = potChipsHtml(G.pot);
+  $('gameCoins').textContent = fmt(G.players[0].coins);
+  for(var k = 0; k < 4; k++){
+    var p2 = G.players[k];
+    var el = $('seat' + p2.seat);
+    if(el) el.classList.toggle('folded', p2.folded);
+  }
+  attachPeekHandlers();
+}
+
+function buildMyHand(){
+  var me = G.players[0];
+  var html = '';
+  var hiddenIdx = G.selectedHiddenIdx;
+
+  var order = [];
+  if(!G.hasSelectedHidden){
+    for(var i = 0; i < me.cards.length; i++) order.push(i);
+  } else {
+    if(hiddenIdx >= 0) order.push(hiddenIdx);
+    for(var j = 0; j < me.cards.length; j++) if(j !== hiddenIdx) order.push(j);
+  }
+
+  for(var k = 0; k < order.length; k++){
+    var idx = order[k];
+    var card = me.cards[idx];
+    var isHidden = (idx === hiddenIdx && G.hasSelectedHidden);
+    var label;
+    if(G.phase === 'resolve') label = '🎴 လှန်';
+    else if(isHidden) label = '🙈 မှောက်';
+    else if(!G.hasSelectedHidden) label = '👁 ဖိ၍ကြည့်';
+    else label = '🎴 လှန်';
+    var slotClass = isHidden ? 'hidden-slot' : (G.hasSelectedHidden ? 'up-slot' : '');
+
+    html += '<div class="ph-slot ' + slotClass + '">' +
+      '<div class="ph-label">' + label + '</div>' +
+      buildMyCard(card, idx, isHidden) +
+    '</div>';
+  }
+  return html;
+}
+
+function buildMyCard(card, idx, forceHidden){
+  var rank = card.slice(0,-1);
+  var suit = card.slice(-1);
+  var isRed = suit === '♥' || suit === '♦';
+
+  var isHidden = forceHidden || !G.hasSelectedHidden;
+  var peelable = false;
+  var revealed = false;
+  var selectable = false;
+
+  if(G.phase === 'view'){
+    if(!G.hasSelectedHidden){
+      peelable = true;
+      selectable = true;
+    }
+  } else if(G.phase === 'select'){
+    if(!G.hasSelectedHidden){
+      peelable = true;
+      selectable = true;
+    }
+  } else {
+    if(idx === G.selectedHiddenIdx){
+      isHidden = true;
+      peelable = false;
+    } else {
+      isHidden = false;
+      revealed = true;
+    }
+  }
+
+  if(G.phase === 'resolve') revealed = true;
+
+  var classes = 'ph-card' + (isRed ? ' red' : '') + (revealed ? ' revealed' : '');
+  if(selectable) classes += ' selectable';
+  if(G.justDealt) classes += ' deal-anim';
+  var dataPeel = peelable ? 'data-peel="1"' : '';
+  var clickAttr = selectable ? 'onclick="handleCardClick(' + idx + ')"' : '';
+
+  return '<div class="' + classes + '" ' + dataPeel + ' data-idx="' + idx + '" data-card="' + card + '" ' + clickAttr + '>' +
+    '<div class="ph-face">' +
+      '<div class="ph-corner-tl">' + rank + '</div>' +
+      '<div class="ph-suit-tl">' + suit + '</div>' +
+      '<div class="ph-corner-br">' + rank + '</div>' +
+      '<div class="ph-center">' + suit + '</div>' +
+    '</div>' +
+    '<div class="ph-back"></div></div>';
+}
+
+function handleCardClick(idx){
+  if(G.hasSelectedHidden) return;
+  // If they were peeking, don't count as tap
+  if(window._wasPeeking){ window._wasPeeking = false; return; }
+  pickHiddenCard(idx);
+}
+
+function miniCardFace(card){
+  var rank = card.slice(0,-1);
+  var suit = card.slice(-1);
+  var isRed = suit === '♥' || suit === '♦';
+  return '<div class="mini-card' + (isRed ? ' red' : '') + '">' +
+    '<div class="mc-r">' + rank + '</div>' +
+    '<div class="mc-s">' + suit + '</div>' +
+    '<div class="mc-c">' + suit + '</div></div>';
+}
+function miniCardBack(){ return '<div class="mini-card back"></div>'; }
+
+function setPeekProgress(card, progress){
+  var back = card.querySelector('.ph-back');
+  if(!back) return;
+  // Clip-path reveals from bottom-left diagonal
+  var cut = (1 - progress) * 100;
+  back.style.clipPath = 'polygon(0 0, 100% 0, 100% ' + cut + '%, ' + cut + '% 100%, 0 100%)';
+}
+
+function attachPeekHandlers(){
+  var cards = document.querySelectorAll('#cd1 .ph-card[data-peel="1"]');
+  cards.forEach(function(cardEl){
+    if(cardEl.dataset.peekAttached === '1') return;
+    cardEl.dataset.peekAttached = '1';
+    var startX = 0, startY = 0, dragging = false, curProgress = 0, wasDrag = false;
+
+    // ✅ New threshold: 45px drag for full reveal (was 90)
+    var PEEK_DISTANCE = 45;
+
+    var onMove = function(e){
+      if(!dragging) return;
+      var cx = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      var cy = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+      var dx = cx - startX;
+      var dy = startY - cy;
+      var dist = Math.max(dx, dy, 0);
+      if(dist > 6) wasDrag = true;
+      var progress = Math.min(dist / PEEK_DISTANCE, 1);
+      setPeekProgress(cardEl, progress);
+      curProgress = progress;
+    };
+
+    var onUp = function(){
+      if(!dragging) return;
+      dragging = false;
+      cardEl.classList.remove('peeking');
+      document.body.classList.remove('suspense-mode');
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+      document.removeEventListener('touchcancel', onUp);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+
+      // ✅ Snap at 50% (was 72%)
+      if(curProgress > 0.5){
+        setPeekProgress(cardEl, 1);
+        cardEl.classList.add('reveal-lock');
+      } else {
+        var back = cardEl.querySelector('.ph-back');
+        if(back){
+          back.style.transition = 'clip-path .4s cubic-bezier(.5,0,.7,1)';
+          setTimeout(function(){ back.style.transition = ''; }, 420);
+        }
+        setPeekProgress(cardEl, 0);
+      }
+      if(wasDrag) window._wasPeeking = true;
+      curProgress = 0;
+      wasDrag = false;
+    };
+
+    var start = function(cx, cy){
+      if(G.phase === 'resolve' || G.phase === 'idle') return;
+      dragging = true; startX = cx; startY = cy; wasDrag = false;
+      cardEl.classList.add('peeking');
+      document.body.classList.add('suspense-mode');
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+      document.addEventListener('touchcancel', onUp);
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    };
+
+    cardEl.addEventListener('pointerdown', function(e){
+      e.preventDefault();
+      start(e.clientX, e.clientY);
+    });
+    cardEl.addEventListener('touchstart', function(e){
+      e.preventDefault();
+      var t = e.touches[0];
+      start(t.clientX, t.clientY);
+    }, { passive: false });
+    cardEl.addEventListener('mousedown', function(e){ start(e.clientX, e.clientY); });
+  });
+}
+
+function potChipsHtml(amount){
+  if(amount <= 0) return '';
+  var denoms = [10000, 5000, 1000, 500, 200, 100];
+  var chips = [], rem = amount;
+  for(var i = 0; i < denoms.length; i++){
+    var d = denoms[i];
+    var cnt = Math.min(Math.floor(rem / d), 4);
+    for(var j = 0; j < cnt; j++) chips.push(d);
+    rem -= cnt * d;
+  }
+  if(!chips.length && amount > 0) chips.push(100);
+  var html = '';
+  for(var k = 0; k < Math.min(chips.length, 12); k++){
+    html += '<div class="chip-icon c' + chips[k] + '">' + (chips[k] >= 1000 ? (chips[k] / 1000) + 'K' : chips[k]) + '</div>';
+  }
+  return html;
+}
+
+function flyChipToPot(fromEl, amount){
+  if(!fromEl) return;
+  var potEl = document.querySelector('.center-pot');
+  if(!potEl) return;
+  var chip = document.createElement('div');
+  chip.className = 'flying-chip';
+  chip.textContent = amount >= 1000 ? (amount / 1000) + 'K' : amount;
+  var fromRect = fromEl.getBoundingClientRect();
+  var potRect = potEl.getBoundingClientRect();
+  chip.style.left = (fromRect.left + fromRect.width/2 - 14) + 'px';
+  chip.style.top = (fromRect.top + fromRect.height/2 - 14) + 'px';
+  document.body.appendChild(chip);
+  void chip.offsetWidth;
+  chip.style.left = (potRect.left + potRect.width/2 - 14) + 'px';
+  chip.style.top = (potRect.top + potRect.height/2 - 14) + 'px';
+  chip.style.transform = 'scale(0.6) rotate(360deg)';
+  chip.style.opacity = '0';
+  setTimeout(function(){ chip.remove(); }, 700);
+}
+
+function addChip(amount){
+  if(G.phase !== 'bet') return;
+  var me = G.players[0];
+  if(me.folded) return;
+  var remaining = me.coins - G.currentBet;
+  if(amount > remaining){ toast('⚠️ Coin မလုံလောက်ပါ'); return; }
+  G.currentBet += amount;
+  updateBetDisplay();
+  var btn = document.querySelector('.chip-btn[data-amt="' + amount + '"]');
+  if(btn && btn.animate){
+    btn.animate([
+      {transform:'scale(1)'},{transform:'scale(1.15)'},{transform:'scale(1)'}
+    ], {duration: 200});
+  }
+}
+
+function addAllIn(){
+  if(G.phase !== 'bet') return;
+  var me = G.players[0];
+  if(me.folded) return;
+  G.currentBet = me.coins;
+  updateBetDisplay();
+  toast('🔥 ALL IN · ' + fmt(G.currentBet));
+}
+
+function clearBet(){
+  if(G.phase !== 'bet') return;
+  G.currentBet = 0;
+  updateBetDisplay();
+}
+
+function updateBetDisplay(){
+  var el = $('betVal');
+  if(!el) return;
+  el.textContent = fmt(G.currentBet) + ' 🪙';
+  el.classList.toggle('zero', G.currentBet === 0);
+  $('btnClear').disabled = (G.currentBet === 0);
+  var me = G.players[0];
+  if(me){
+    $('btnRaise').disabled = G.currentBet < G.ante;
+    $('btnCall').disabled = false;
+    $('btnFold').disabled = false;
+  }
+}
+
+function setControlsDisabled(disabled){
+  $('btnFold').disabled = disabled;
+  $('btnCall').disabled = disabled;
+  $('btnRaise').disabled = disabled;
+  document.querySelectorAll('.chip-btn').forEach(function(b){ b.disabled = disabled; });
+  if(!disabled) updateBetDisplay();
+  else $('btnClear').disabled = true;
+}
+
+function startPhaseTimer(sec, phaseName, onEnd){
+  stopPhaseTimer();
+  G.phaseVal = sec;
+  var pillId = 'gameTimer';
+  var valId  = 'timerVal';
+  $(pillId).style.display = '';
+  $(valId).textContent = sec + 's';
+  G.phaseTimer = setInterval(function(){
+    G.phaseVal--;
+    $(valId).textContent = G.phaseVal + 's';
+    if(phaseName === 'bet') $('gameTimer').classList.toggle('green', G.phaseVal <= 5);
+    if(G.phaseVal <= 0){ stopPhaseTimer(); if(onEnd) onEnd(); }
+  }, 1000);
+}
+function stopPhaseTimer(){
+  if(G.phaseTimer){ clearInterval(G.phaseTimer); G.phaseTimer = null; }
+  $('gameTimer').style.display = 'none';
+  $('gameTimer').classList.remove('green');
+}
+
+function showPeekBanner(show, text){
+  var banner = $('peekBanner');
+  if(!banner) return;
+  banner.classList.toggle('show', show);
+  if(text && $('peekBannerText')) $('peekBannerText').textContent = text;
+}
+
+function gameAction(action){
+  if(G.phase !== 'bet') return;
+  stopPhaseTimer();
+  setControlsDisabled(true);
+
+  var me = G.players[0];
+  var mySeatEl = document.querySelector('.player-seat');
+
+  if(action === 'fold'){
+    me.folded = true;
+    toast('↩ ဖိုးလိုက်သည် / Folded');
+    setTimeout(endRound, 900);
+    return;
+  }
+
+  if(action === 'call'){
+    var callAmount = Math.max(G.currentBet, G.ante);
+    if(me.coins < callAmount) callAmount = me.coins;
+    me.coins -= callAmount;
+    me.bet += callAmount;
+    G.pot += callAmount;
+    G.myBetTotal += callAmount;
+    flyChipToPot(mySeatEl, callAmount);
+    toast('✅ ' + fmt(callAmount) + ' 🪙 လိုက်သည်');
+  }
+
+  if(action === 'raise'){
+    var raiseAmount = G.currentBet;
+    if(raiseAmount < G.ante) raiseAmount = G.ante;
+    if(me.coins < raiseAmount) raiseAmount = me.coins;
+    me.coins -= raiseAmount;
+    me.bet += raiseAmount;
+    G.pot += raiseAmount;
+    G.myBetTotal += raiseAmount;
+    G.highestBet = Math.max(G.highestBet, raiseAmount);
+    flyChipToPot(mySeatEl, raiseAmount);
+    toast('⬆ ' + fmt(raiseAmount) + ' 🪙 ခေါ်သည်');
+  }
+
+  G.currentBet = 0;
+  updateGameUI();
+
+  setTimeout(function(){
+    var foldChance = G.difficulty === 'hard' ? 0.12 : 0.28;
+    var raiseChance = G.difficulty === 'hard' ? 0.55 : 0.30;
+    for(var i = 1; i < 4; i++){
+      var bot = G.players[i];
+      if(bot.folded) continue;
+      if(Math.random() < foldChance){ bot.folded = true; continue; }
+      var botBet = Math.random() < raiseChance ? G.ante * 2 : G.ante;
+      if(bot.coins >= botBet){ bot.coins -= botBet; bot.bet += botBet; G.pot += botBet; flyChipToPot($('seat' + bot.seat), botBet); }
+    }
+    updateGameUI();
+    setTimeout(endRound, 700);
+  }, 600);
+}
+
+function endRound(){
+  var active = G.players.filter(function(p){ return !p.folded; });
+  if(active.length <= 1){ return resolveHand(); }
+
+  if(G.round < MAX_ROUNDS){
+    toast('🎴 ဒိုင်မှ ဖဲ 1 ချပ် ထပ်ဝေမည်');
+    setTimeout(dealMoreCards, 600);
+  } else {
+    resolveHand();
+  }
+}
+
+function dealMoreCards(){
+  for(var i = 0; i < 4; i++){
+    var p = G.players[i];
+    if(p.folded) continue;
+    p.cards.push(G.deck.pop());
+  }
+  G.round++;
+  G.justDealt = true;
+  updateGameUI();
+  G.justDealt = false;
+
+  G.phase = 'view';
+  showPeekBanner(true, '👆 ဖဲအသစ် ဖိ၍ ဆွဲလှန်ကြည့်ပါ · သို့မဟုတ် နှိပ်ပါ');
+  setControlsDisabled(true);
+
+  // Allow immediate bet action without waiting timer
+  setTimeout(function(){
+    if(G.phase === 'view') beginBettingPhase();
+  }, 3000);
+}
+
+function resolveHand(){
+  stopPhaseTimer();
+  G.phase = 'resolve';
+  showPeekBanner(false);
+  setControlsDisabled(true);
+
+  document.querySelectorAll('#cd1 .ph-card').forEach(function(el){
+    el.classList.add('revealed');
+    setPeekProgress(el, 1);
+  });
+  setTimeout(function(){ updateGameUI(); }, 50);
+
+  var active = G.players.filter(function(p){ return !p.folded; });
+  if(!active.length) active = G.players;
+
+  active.forEach(function(p){
+    p.hand = evaluateHand(p.cards);
+    p.score = scoreHand(p.hand);
+  });
+  active.sort(function(a, b){ return b.score - a.score; });
+
+  var winner = active[0];
+  var user = S.users[S.current];
+
+  var rake = S.settings.rakePerHand;
+  var rakeTotal = 0, affected = 0;
+  if(!G.demo){
+    G.players.forEach(function(p){
+      if(p.isMe){ if(p.coins >= rake){ p.coins -= rake; rakeTotal += rake; affected++; } }
+      else { rakeTotal += rake; affected++; }
+    });
+  }
+  $('rakeTotal').textContent = fmt(rakeTotal);
+
+  var potAfter = Math.max(0, G.pot - rakeTotal);
+  winner.coins += potAfter;
+  var wSeat = $('seat' + winner.seat);
+  if(wSeat) wSeat.classList.add('winner');
+
+  if(G.demo){
+    user.demoCoins = G.players[0].coins;
+    saveState();
+    updateGameUI();
+    showResultModal(winner, potAfter, rakeTotal, affected, true);
+    return;
+  }
+
+  S.rakeIncome.push({ amount: rakeTotal, time: Date.now() });
+  S.games++;
+  user.coins = G.players[0].coins;
+  S.gameHistory.unshift({
+    userId: user.id, username: user.name, hand: G.hand,
+    result: winner.isMe ? 'WIN' : 'LOSE',
+    pot: G.pot, rake: rakeTotal, time: Date.now()
+  });
+  S.gameHistory = S.gameHistory.slice(0, 100);
+  if(winner.isMe) user.wins++; else user.losses++;
+  user.games++;
+  saveState();
+  updateGameUI();
+  showResultModal(winner, potAfter, rakeTotal, affected, false);
+}
+
+function showResultModal(winner, potAfter, rakeTotal, affected, isDemo){
+  var user = S.users[S.current];
+  var myBal = isDemo ? (user.demoCoins || 0) : (user.coins || 0);
+
+  var info;
+  if(isDemo){
+    info = '🎮 Computer: <b>' + G.difficulty.toUpperCase() + '</b><br>' +
+      '💰 Pot: ' + fmt(G.pot) + '<br>💼 Rake: မကောက်ခံပါ<br>' +
+      '🎮 Demo Coin: <b style="color:#ffd54a">' + fmt(myBal) + '</b>';
+  } else {
+    info = '💰 Pot: ' + fmt(G.pot) + '<br>' +
+      '💼 Dealer Rake: <b style="color:#22c55e">' + fmt(rakeTotal) + ' 🪙</b> (' + affected + ' × ' + fmt(S.settings.rakePerHand) + ')<br>' +
+      '💼 သင့် Coin: <b style="color:#ffd54a">' + fmt(myBal) + '</b>';
+  }
+
+  var msg = '<div class="modal-head"><div class="modal-title">' +
+      '<span>' + (isDemo ? '🎮' : '🏆') + '</span>' +
+      '<div><span>' + (isDemo ? 'အစမ်းဆော့ ရလဒ်' : 'ပွဲ ရလဒ်') + '</span>' +
+      '<span class="bi-en">Hand #' + G.hand + ' · ' + G.round + ' rounds</span></div></div></div>' +
+    '<div style="text-align:center;margin-bottom:12px">' +
+      '<div style="font-size:44px;margin-bottom:8px">' + (winner.isMe ? '🏆' : '😔') + '</div>' +
+      '<div style="font-size:18px;font-weight:900;color:#ffd54a;margin-bottom:6px">' + esc(winner.name) + ' အနိုင်ရသည်</div>' +
+      '<div style="font-size:12px;color:#a7f3d0">Hand: ' + esc(winner.hand) + '</div>' +
+      '<div style="font-size:14px;color:#22c55e;font-weight:900;margin-top:8px">+' + fmt(potAfter) + ' 🪙</div></div>' +
+    (isDemo ? '<div class="warn-box" style="border-color:#fbbf24;background:linear-gradient(160deg,rgba(251,191,36,.2),rgba(180,83,9,.2));color:#fde68a">🎮 Demo — Coin အစစ်နှင့် မသက်ဆိုင်ပါ</div>' : '') +
+    '<div class="info-steps">' + info + '</div>' +
+    '<div class="warn-box" style="border-color:#f59e0b;background:linear-gradient(160deg,rgba(245,158,11,.25),rgba(180,83,9,.25));color:#fde68a">' +
+      '⏱ 30 စက္ကန့်အတွင်း နောက်ပွဲစတင်ရန် နှိပ်ပါ<br>' +
+      '<span style="font-size:10px;opacity:.8">Auto-exit if no action in 30s</span></div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+    '<button class="form-btn green" onclick="closeModal();startNextHandNow()"><span>▶️ နောက်ပွဲ</span><span class="bi-en">Next</span></button>' +
+    '<button class="form-btn red" onclick="closeModal();leaveGame()"><span>⬅ ထွက်</span><span class="bi-en">Leave</span></button></div>';
+
+  openModal(msg);
+  startIntermission();
+}
+
+function startIntermission(){
+  var inter = $('intermission');
+  if(!inter) return;
+  inter.style.display = 'flex';
+  $('imCount').textContent = INTERMISSION_TIME;
+  var ring = $('imTimer');
+  var remaining = INTERMISSION_TIME;
+
+  clearInterval(G.intermissionTimer);
+  G.intermissionTimer = setInterval(function(){
+    remaining--;
+    $('imCount').textContent = Math.max(0, remaining);
+    var deg = (remaining / INTERMISSION_TIME) * 360;
+    ring.style.background = 'conic-gradient(#22c55e ' + deg + 'deg, rgba(30,58,95,.5) ' + deg + 'deg)';
+    if(remaining <= 0){
+      clearInterval(G.intermissionTimer);
+      G.intermissionTimer = null;
+      toast('⚠️ အချိန်ကုန် · Auto ထွက်ခွါသွားပါပြီ');
+      setTimeout(leaveGame, 800);
+    }
+  }, 1000);
+  ring.style.background = 'conic-gradient(#22c55e 360deg, rgba(30,58,95,.5) 360deg)';
+}
+
+function stopIntermission(){
+  clearInterval(G.intermissionTimer);
+  G.intermissionTimer = null;
+  var inter = $('intermission');
+  if(inter) inter.style.display = 'none';
+}
+
+function startNextHandNow(){
+  stopIntermission();
+  document.querySelectorAll('.seat').forEach(function(s){ s.classList.remove('winner'); });
+  var user = S.users[S.current];
+  var bal = G.demo ? (user.demoCoins || 0) : (user.coins || 0);
+  if(bal < G.ante){
+    toast('⚠️ Coin ကုန်သွားပါပြီ · Top up to continue');
+    setTimeout(leaveGame, 1200);
+    return;
+  }
+  startNewHand();
+}
+
+function togglePreExit(){
+  if(G.phase !== 'idle' && G.phase !== 'resolve'){
+    toast('⚠️ ကစားပွဲ မပြီးသေးပါ · မထွက်ရပါ<br><span style="font-size:10px">Cannot leave mid-hand</span>');
+    return;
+  }
+  if(G.phase === 'idle' || !G.players.length){ leaveGame(); return; }
+  G.preExitQueued = !G.preExitQueued;
+  updatePreExitUI();
+  if(G.preExitQueued){
+    toast('⏳ ကြိုတင်ထွက်ရန် သတ်မှတ်ပြီး<br><span style="font-size:10px">Pre-exit queued</span>');
+  } else {
+    toast('✅ ထွက်မည့်အစီအစဉ် ဖျက်လိုက်သည်');
+  }
+}
+function updatePreExitUI(){
+  var btn = $('preExitBtn');
+  if(!btn) return;
+  if(G.preExitQueued){
+    btn.classList.add('queued');
+    btn.innerHTML = '⏳<span class="badge">Auto Exit</span>';
+  } else {
+    btn.classList.remove('queued');
+    btn.innerHTML = '✕';
+  }
+}
+function leaveGame(){
+  stopPhaseTimer();
+  stopIntermission();
+  clearTimeout(G.autoExitTimer);
+  closeModal();
+  var u = S.users[S.current];
+  var wasDemo = G.demo;
+  if(u){
+    if(wasDemo) u.demoCoins = DEMO_START;
+    else if(G.players[0]) u.coins = G.players[0].coins;
+  }
+  G.demo = false;
+  G.phase = 'idle';
+  G.preExitQueued = false;
+  G.players = [];
+  G.justDealt = false;
+  updatePreExitUI();
+  $('demoPill').style.display = 'none';
+  $('diffPill').style.display = 'none';
+  showPeekBanner(false);
+  saveState();
+  showUserDashboard();
+  toast(wasDemo ? '🎮 အစမ်းဆော့မှ ထွက်ပြီး' : '🚪 ထွက်ပြီး / Left table');
+}
+
+function evaluateHand(cards){
+  if(cards.length < 5) return 'HIGH CARD';
+  var allCombos = getCombos(cards, 5);
+  var best = { name: 'HIGH CARD', score: 1 };
+  allCombos.forEach(function(combo){
+    var h = evaluate5(combo);
+    var s = scoreHand(h);
+    if(s > best.score){ best = { name: h, score: s }; }
+  });
+  return best.name;
+}
+function getCombos(arr, k){
+  var res = [];
+  function helper(start, cur){
+    if(cur.length === k){ res.push(cur.slice()); return; }
+    for(var i = start; i < arr.length; i++){
+      cur.push(arr[i]);
+      helper(i + 1, cur);
+      cur.pop();
+    }
+  }
+  helper(0, []);
+  return res;
+}
+function evaluate5(cards){
+  var vals = cards.map(function(c){ return rankToNum(c.slice(0,-1)); }).sort(function(a,b){ return b - a; });
+  var flush = cards.every(function(c){ return c.slice(-1) === cards[0].slice(-1); });
+  var uniq = vals.filter(function(v,i){ return vals.indexOf(v) === i; });
+  var straight = uniq.length === 5 && (uniq[0] - uniq[4] === 4);
+  var counts = {};
+  vals.forEach(function(v){ counts[v] = (counts[v] || 0) + 1; });
+  var freq = Object.values(counts).sort(function(a,b){ return b - a; });
+  if(straight && flush) return 'STRAIGHT FLUSH';
+  if(freq[0] === 4) return 'FOUR OF A KIND';
+  if(freq[0] === 3 && freq[1] === 2) return 'FULL HOUSE';
+  if(flush) return 'FLUSH';
+  if(straight) return 'STRAIGHT';
+  if(freq[0] === 3) return 'THREE OF A KIND';
+  if(freq[0] === 2 && freq[1] === 2) return 'TWO PAIR';
+  if(freq[0] === 2) return 'PAIR';
+  return 'HIGH CARD';
+}
+function scoreHand(name){
+  return { 'HIGH CARD': 1, 'PAIR': 2, 'TWO PAIR': 3, 'THREE OF A KIND': 4, 'STRAIGHT': 5, 'FLUSH': 6, 'FULL HOUSE': 7, 'FOUR OF A KIND': 8, 'STRAIGHT FLUSH': 9 }[name] || 0;
+}
+function rankToNum(r){ return { 'J': 11, 'Q': 12, 'K': 13, 'A': 14 }[r] || parseInt(r, 10); }
+
+function clearChat(){ $('chatLog').innerHTML = ''; }
+
+function sendChat(){
+  var input = $('chatInput');
+  var txt = input.value.trim();
+  if(!txt) return;
+  addChatMessage('You', txt, true);
+  input.value = '';
+  setTimeout(function(){
+    var bots = G.players.filter(function(p){ return !p.isMe && !p.folded; });
+    if(bots.length){
+      var bot = bots[Math.floor(Math.random() * bots.length)];
+      var replies = ['👍','😊','🎯','Nice!','Good luck','😎','🔥'];
+      addChatMessage(bot.name, replies[Math.floor(Math.random() * replies.length)], false);
+    }
+  }, 800 + Math.random() * 800);
+}
+
+function addChatMessage(name, text, isSelf){
+  var log = $('chatLog');
+  var div = document.createElement('div');
+  div.className = 'chat-msg' + (isSelf ? ' self' : '');
+  div.innerHTML = '<span class="cm-name">' + esc(name) + ':</span>' + esc(text);
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  setTimeout(function(){
+    if(div.parentNode) div.parentNode.removeChild(div);
+  }, 6000);
+}
+
+function openEmotePicker(type){
+  var user = S.users[S.current];
+  if(!user) return;
+  var owned = getOwnedEmotePacks(user.id);
+  var freeEmote = ['😊','😂','😍','👍','🎉'];
+
+  var list;
+  if(type === 'emote'){
+    list = freeEmote.slice();
+    owned.forEach(function(pack){
+      var p = EMOTE_PACKS.find(function(x){ return x.id === pack; });
+      if(p) list = list.concat(p.emotes);
+    });
+    list = list.filter(function(v,i){ return list.indexOf(v) === i; });
+  } else {
+    list = INTERACT_EMOTES.slice();
+  }
+
+  var html = '<div class="modal-head"><div class="modal-title"><span>' + (type === 'emote' ? '😊' : '👋') + '</span>' +
+    '<div><span>' + (type === 'emote' ? 'Emoticon' : 'Interact') + '</span>' +
+    '<span class="bi-en">' + (type === 'emote' ? 'Free + Owned packs' : 'Free for all') + '</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+
+  html += '<div class="emote-picker">';
+  for(var i = 0; i < list.length; i++){
+    html += '<div class="emote-opt" onclick="sendEmote(\'' + list[i] + '\')">' + list[i] + '</div>';
+  }
+  html += '</div>';
+
+  if(type === 'emote'){
+    html += '<div class="info-steps" style="border-left-color:#fbbf24;font-size:10.5px">' +
+      '🎁 <b>Free pack</b> — 5 emotes always available<br>' +
+      '🛒 <b>Owned packs</b> — ' + owned.length + ' active<br>' +
+      '<span style="font-size:10px;opacity:.7">Buy more packs from the shop</span></div>';
+  } else {
+    html += '<div class="info-steps" style="border-left-color:#a855f7;font-size:10.5px">' +
+      '👋 <b>Interact</b> — Free forever<br>' +
+      '<span style="font-size:10px;opacity:.7">Use these to interact with players</span></div>';
+  }
+
+  html += '<button class="form-btn green" onclick="closeModal();openEmoteShop()"><span>🛒 Emote ဆိုင်</span><span class="bi-en">Open Shop</span></button>';
+  openModal(html);
+}
+
+function sendEmote(emoji){
+  closeModal();
+  if(!$('screenGame').classList.contains('active')){ toast(emoji); return; }
+  var floatEl = document.createElement('div');
+  floatEl.className = 'emote-float';
+  floatEl.textContent = emoji;
+  floatEl.style.left = (20 + Math.random() * 60) + '%';
+  document.body.appendChild(floatEl);
+  setTimeout(function(){ floatEl.remove(); }, 2600);
+  addChatMessage('You', emoji, true);
+  setTimeout(function(){
+    var bots = G.players.filter(function(p){ return !p.isMe && !p.folded; });
+    if(bots.length && Math.random() < 0.6){
+      var bot = bots[Math.floor(Math.random() * bots.length)];
+      var back = INTERACT_EMOTES[Math.floor(Math.random() * INTERACT_EMOTES.length)];
+      addChatMessage(bot.name, back, false);
+    }
+  }, 900);
+}
+
+function getOwnedEmotePacks(userId){
+  var now = Date.now();
+  return S.emotePurchases
+    .filter(function(p){ return p.userId === userId && p.expiresAt > now; })
+    .map(function(p){ return p.packId; });
+}
+
+function openEmoteShop(){
+  var user = S.users[S.current];
+  if(!user) return;
+  var owned = getOwnedEmotePacks(user.id);
+  var now = Date.now();
+
+  var html = '<div class="modal-head"><div class="modal-title"><span>🛒</span>' +
+    '<div><span>Emote Shop</span><span class="bi-en">Emoticon ဆိုင် · လစဉ်ကြေး</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+
+  html += '<div class="info-steps" style="border-left-color:#fbbf24">' +
+    '💡 <b>Emote Pack</b> — ဝယ်ပြီး <b>1 လ</b> ခံစားနိုင်သည်<br>' +
+    '💰 Coin အစစ်ဖြင့်သာ ဝယ်ရမည် · လကုန်ရင် အလိုအလျောက် ပိတ်သွားမည်<br>' +
+    '<span style="font-size:10px;opacity:.8">Buy with real coins · Auto-expires after 1 month</span></div>';
+
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.4);padding:8px 12px;border-radius:10px;margin-bottom:12px;border:1.5px solid #4a7bc8">' +
+    '<span style="font-size:11px;font-weight:900;color:#a7f3d0">💼 သင့် Coin</span>' +
+    '<span style="font-size:16px;font-weight:1000;color:#ffd54a">🪙 ' + fmt(user.coins) + '</span></div>';
+
+  html += '<div class="emote-grid">';
+  EMOTE_PACKS.forEach(function(pack){
+    var isOwned = owned.indexOf(pack.id) >= 0;
+    var activePurchase = isOwned ? S.emotePurchases.find(function(p){ return p.userId === user.id && p.packId === pack.id && p.expiresAt > now; }) : null;
+    var daysLeft = activePurchase ? Math.ceil((activePurchase.expiresAt - now) / (1000*60*60*24)) : 0;
+    var canAfford = user.coins >= pack.price;
+
+    html += '<div class="emote-pack ' + (isOwned ? 'owned' : '') + '" onclick="buyEmotePack(\'' + pack.id + '\')">' +
+      '<div class="ep-emoji">' + pack.emoji + '</div>' +
+      '<div class="ep-name">' + esc(pack.name) + '<small>' + esc(pack.en) + ' · ' + pack.emotes.length + ' emotes</small></div>' +
+      (isOwned
+        ? '<span class="ep-owned">✅ ' + daysLeft + ' ရက် ကျန်</span>'
+        : '<span class="ep-price" style="' + (canAfford ? '' : 'opacity:.5') + '">🪙 ' + fmt(pack.price) + '</span>'
+      ) +
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="info-steps" style="border-left-color:#22c55e;margin-top:14px;font-size:10.5px">' +
+    '🎁 <b>Free</b> — 5 Basic emotes + all 8 Interact emotes<br>' +
+    '📅 <b>1 လ</b> အလိုအလျောက် သက်တမ်းကုန်ဆုံးမည်<br>' +
+    '❌ <b>ပြန်အမ်းငွေ</b> — မရပါ<br>' +
+    '<span style="font-size:10px;opacity:.7">No refunds · Auto-renewal not enabled</span></div>';
+
+  openModal(html);
+}
+
+function buyEmotePack(packId){
+  var user = S.users[S.current];
+  if(!user) return;
+  var pack = EMOTE_PACKS.find(function(p){ return p.id === packId; });
+  if(!pack) return;
+
+  var now = Date.now();
+  var existing = S.emotePurchases.find(function(p){ return p.userId === user.id && p.packId === packId && p.expiresAt > now; });
+
+  if(existing){
+    var days = Math.ceil((existing.expiresAt - now) / (1000*60*60*24));
+    toast('✅ ဤ pack ကို ပိုင်ဆိုင်ပြီးပါပြီ<br><span style="font-size:10px">' + days + ' ရက် ကျန်ရှိသည်</span>');
+    return;
+  }
+
+  if(user.coins < pack.price){
+    toast('⚠️ Coin မလုံလောက်ပါ<br><span style="font-size:10px">Need ' + fmt(pack.price) + ' · You have ' + fmt(user.coins) + '</span>');
+    return;
+  }
+
+  if(!confirm('ဝယ်ယူမှာ သေချာလား?\n\n' + pack.emoji + ' ' + pack.name + ' Pack\n💰 ' + fmt(pack.price) + ' Coins\n📅 1 လ သက်တမ်း\n\nConfirm purchase?')) return;
+
+  user.coins -= pack.price;
+  var expiresAt = now + (30 * 24 * 60 * 60 * 1000);
+  S.emotePurchases.push({
+    id: genId('E'), userId: user.id, username: user.name,
+    packId: pack.id, packName: pack.name, price: pack.price,
+    purchasedAt: now, expiresAt: expiresAt
+  });
+  saveState();
+  if(S.current && S.current !== 'admin') showUserDashboard();
+  toast('✅ ' + pack.emoji + ' <b>' + pack.name + '</b> Pack ဝဝယ်ပြီး<br><span style="font-size:10px">' + fmt(pack.price) + ' Coins · 1 လ ခံစားနိုင်မည်</span>');
+  openEmoteShop();
+}
+
+function cardHTML(card, size){
+  var rank = card.slice(0,-1);
+  var suit = card.slice(-1);
+  var isRed = suit === '♥' || suit === '♦';
+  var cls = 'demo-card' + (isRed ? ' red' : '') + (size === 'small' ? ' small' : '');
+  return '<div class="' + cls + '">' +
+    '<div class="dc-tl">' + rank + '</div>' +
+    '<div class="dc-tl-suit">' + suit + '</div>' +
+    '<div class="dc-c">' + suit + '</div></div>';
+}
+function cardBack(size){
+  var cls = 'demo-card back' + (size === 'small' ? ' small' : '');
+  return '<div class="' + cls + '"></div>';
+}
+
+function openRules(){
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>📖</span>' +
+      '<div><span>ကစားနည်း လမ်းညွှန်</span><span class="bi-en">Complete Game Guide</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="rules-tabs">' +
+      '<button class="rules-tab active" onclick="showRuleTab(\'basic\',event)">📋 အခြေခံ</button>' +
+      '<button class="rules-tab" onclick="showRuleTab(\'steps\',event)">🎯 အဆင့်ဆင့်</button>' +
+      '<button class="rules-tab" onclick="showRuleTab(\'hands\',event)">🃏 ဖဲအစဉ်</button>' +
+      '<button class="rules-tab" onclick="showRuleTab(\'rake\',event)">💼 Rake</button>' +
+      '<button class="rules-tab" onclick="showRuleTab(\'rules\',event)">📜 စည်းမျဉ်း</button>' +
+    '</div>' +
+    '<div class="rules-panel active" id="rulePanel-basic">' +
+      '<div class="info-steps" style="border-left-color:#fbbf24"><b style="color:#fbbf24">🃏 ဖဲအုပ် / Deck</b><br>9 · 10 · J · Q · K · A × ♠ ♥ ♦ ♣<br><b>6 ranks × 4 suits = 24 cards</b></div>' +
+      '<div class="step-box">' +
+        '<div class="sb-head"><div class="sb-num">🪑</div><div class="sb-title">စားပွဲတွင် 5 နေရာ<small>4 players + 1 dealer</small></div></div>' +
+        '<div class="mini-table">' +
+          '<div class="mt-seat top"><div class="mt-av">🤵</div>DEALER</div>' +
+          '<div class="mt-seat left"><div class="mt-av">👤</div>Player 2</div>' +
+          '<div class="mt-seat right"><div class="mt-av">👤</div>Player 4</div>' +
+          '<div class="mt-seat bottom"><div class="mt-av">👤</div>You</div>' +
+          '<div class="mt-seat top" style="top:78px"><div class="mt-av">👤</div>Player 3</div>' +
+          '<div class="mt-center"><div class="mt-pot">💰 POT</div></div>' +
+        '</div>' +
+        '<div class="sb-desc">ကစားသမား <b>4 ဦး</b> + ဒိုင် <b>1 ဦး</b> = <b>5 နေရာ</b><br>ဒိုင်သည် ဖဲဝေသည် · Rake ကောက်ခံသည်<br>ကစားသမား 2 ဦးမှ စ၍ Battle ဆော့နိုင်သည်</div>' +
+      '</div>' +
+      '<div class="info-steps" style="border-left-color:#06b6d4"><b style="color:#06b6d4">🎮 Role 3 မျိုး</b><br>🎯 <b>ကစားမည်</b> — Coin အစစ် · Rake ကောက်ခံ<br>👥 <b>Online ရှာဖွေ</b> — ကစားသမား ဖိတ်ခေါ်<br>🎮 <b>အစမ်းဆော့</b> — Computer · 900K Free · Rake မကောက်</div>' +
+    '</div>' +
+    '<div class="rules-panel" id="rulePanel-steps">' +
+      '<div style="font-size:11.5px;color:#a7f3d0;text-align:center;margin-bottom:12px;font-weight:900">🎯 ကစားနည်း အဆင့် ၇ ဆင့်</div>' +
+      '<div class="step-box"><div class="sb-head"><div class="sb-num">1</div><div class="sb-title">လောင်းကြေး ထည့်ပါ<small>Post Ante</small></div></div><div class="sb-cards"><div style="font-size:26px">💰</div><div style="color:#ffd54a;font-weight:1000;font-size:18px;padding:16px 8px">➡️</div><div style="color:#a7f3d0;font-size:12px;padding:14px 6px">POT</div></div><div class="sb-desc">ပွဲမစခင် <b>Ante</b> လောင်းကြေး ထည့်ရမည် · Pot ထဲ စုပေါင်းမည်</div></div>' +
+      '<div class="step-box"><div class="sb-head"><div class="sb-num">2</div><div class="sb-title">ဒိုင် ဖဲ ၂ ချပ် မှောက်ဝေသည်<small>Dealer deals 2 face-down</small></div></div><div class="sb-cards">' + cardBack() + cardBack() + '</div><div class="sb-desc">ကစားသမား <b>4 ဦး</b> ထံ ဖဲ <b>၂ ချပ်</b> စီ မှောက်ဝေမည်</div></div>' +
+      '<div class="step-box"><div class="sb-head"><div class="sb-num">3</div><div class="sb-title">ဖဲထောင့်မှ ဖိ၍ ဆွဲလှန်ကြည့်ပါ<small>Peel to peek</small></div></div><div class="sb-cards">' + cardHTML('A♠', 'small') + '<div style="align-self:center;color:#fbbf24;font-size:11px;font-weight:900;padding:0 6px">👆 ဖိဆွဲ</div>' + cardBack('small') + '</div><div class="sb-desc">လက်ဖြင့် ဖိဆွဲပြီး ရင်ခုန်စိတ်လှုပ်ရှားစွာ ဖွင့်ကြည့်နိုင်သည်<br><b>တိုတိုဆွဲ (45px)</b> ရင် အပြည့်လှန်မည်</div></div>' +
+      '<div class="step-box"><div class="sb-head"><div class="sb-num">4</div><div class="sb-title">မှောက်ဖဲ ၁ ချပ် ရွေးပါ<small>Choose hidden card</small></div></div><div class="sb-cards"><div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:9px;color:#fca5a5;font-weight:900">🙈 မှောက်</span>' + cardBack('small') + '</div><div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span style="font-size:9px;color:#86efac;font-weight:900">🎴 လှန်</span>' + cardHTML('K♦', 'small') + '</div></div><div class="sb-desc"><b>ဖဲကို နှိပ်</b>လိုက်တာနဲ့ မှောက်ဖဲ အဖြစ် ရွေးပြီးသား<br>မှောက်ဖဲ ဘယ်ဘက် · လှန်ဖဲ ညာဘက်</div></div>' +
+      '<div class="step-box"><div class="sb-head"><div class="sb-num">5</div><div class="sb-title">လောင်းကြေးခေါ်ပါ<small>Betting (15s)</small></div></div><div class="sb-cards" style="flex-wrap:wrap;gap:5px">' +
+        '<div class="chip-btn c100" style="width:36px;height:36px;pointer-events:none"><span class="cb-val" style="font-size:10px">100</span></div>' +
+        '<div class="chip-btn c500" style="width:36px;height:36px;pointer-events:none"><span class="cb-val" style="font-size:10px">500</span></div>' +
+        '<div class="chip-btn c1000" style="width:36px;height:36px;pointer-events:none"><span class="cb-val" style="font-size:10px">1K</span></div>' +
+        '<div class="chip-btn allin" style="width:36px;height:36px;pointer-events:none"><span class="cb-val" style="font-size:9px">ALL</span></div>' +
+      '</div><div class="sb-desc">Chip တစ်ချက်စီ နှိပ်၍ ပေါင်းပြီး လောင်းနိုင်သည်<br><b>15 စက္ကန့်</b> စဉ်းစားချိန် · Auto Fold ဖြစ်နိုင်သည်</div></div>' +
+      '<div class="step-box"><div class="sb-head"><div class="sb-num">6</div><div class="sb-title">ဒိုင် တစ်ချပ်စီ ထပ်ဝေသည်<small>+1 card per round</small></div></div><div class="sb-cards" style="flex-wrap:wrap;gap:4px">' + cardBack('small') + cardHTML('K♦', 'small') + '<span style="align-self:center;color:#fbbf24;font-weight:900;font-size:14px">+</span>' + cardBack('small') + '</div><div class="sb-desc">လောင်းကြေးပြီးတိုင်း ဒိုင် <b>၁ ချပ်</b> ထပ်ဝေမည်<br>ချပ် <b>၅ ချပ်</b> ပြည့်သည်အထိ ဆက်</div></div>' +
+      '<div class="step-box"><div class="sb-head"><div class="sb-num">7</div><div class="sb-title">အကြီးဆုံး ဖဲပိုင်ရှင် Pot ရမည်<small>Best hand wins</small></div></div><div class="sb-cards" style="flex-wrap:wrap;gap:3px">' + cardHTML('A♠','small') + cardHTML('A♥','small') + cardHTML('A♦','small') + cardHTML('K♠','small') + cardHTML('K♦','small') + '</div><div class="sb-desc"><b>5 ချပ်</b> အနက် အကောင်းဆုံး ဖဲပိုင်ရှင် Pot အားလုံး ရမည်<br>ဒိုင်က Player တစ်ဦးချင်းမှ <b>50 Coin</b> Rake ကောက်မည်</div></div>' +
+    '</div>' +
+    '<div class="rules-panel" id="rulePanel-hands">' +
+      '<div style="font-size:11.5px;color:#a7f3d0;text-align:center;margin-bottom:12px;font-weight:900">🃏 ဖဲအစဉ် ၉ ဆင့်</div>' +
+      '<div class="rank-list">' +
+        '<div class="rank-item gold"><div class="rank-badge">9</div><div class="rank-info"><b>Straight Flush</b><small>အရောင်တူ + အစဉ်လိုက်</small></div></div>' +
+        '<div style="display:flex;gap:4px;padding:4px 0 8px 40px;flex-wrap:wrap">' + cardHTML('9♠','small') + cardHTML('10♠','small') + cardHTML('J♠','small') + cardHTML('Q♠','small') + cardHTML('K♠','small') + '</div>' +
+        '<div class="rank-item gold"><div class="rank-badge">8</div><div class="rank-info"><b>Four of a Kind</b><small>လေးလုံးတူ</small></div></div>' +
+        '<div style="display:flex;gap:4px;padding:4px 0 8px 40px;flex-wrap:wrap">' + cardHTML('Q♠','small') + cardHTML('Q♥','small') + cardHTML('Q♦','small') + cardHTML('Q♣','small') + '</div>' +
+        '<div class="rank-item silver"><div class="rank-badge">7</div><div class="rank-info"><b>Full House</b><small>3 + 2 ပေါင်းစပ်</small></div></div>' +
+        '<div style="display:flex;gap:4px;padding:4px 0 8px 40px;flex-wrap:wrap">' + cardHTML('A♠','small') + cardHTML('A♥','small') + cardHTML('A♦','small') + cardHTML('K♠','small') + cardHTML('K♦','small') + '</div>' +
+        '<div class="rank-item silver"><div class="rank-badge">6</div><div class="rank-info"><b>Flush</b><small>အရောင်တူ ၅ ချပ်</small></div></div>' +
+        '<div style="display:flex;gap:4px;padding:4px 0 8px 40px;flex-wrap:wrap">' + cardHTML('9♥','small') + cardHTML('J♥','small') + cardHTML('Q♥','small') + cardHTML('A♥','small') + cardHTML('K♥','small') + '</div>' +
+        '<div class="rank-item bronze"><div class="rank-badge">5</div><div class="rank-info"><b>Straight</b><small>အစဉ်လိုက် ၅ ချပ်</small></div></div>' +
+        '<div class="rank-item bronze"><div class="rank-badge">4</div><div class="rank-info"><b>Three of a Kind</b><small>သုံးလုံးတူ</small></div></div>' +
+        '<div class="rank-item bronze"><div class="rank-badge">3</div><div class="rank-info"><b>Two Pair</b><small>၂ တွဲ</small></div></div>' +
+        '<div class="rank-item bronze"><div class="rank-badge">2</div><div class="rank-info"><b>Pair</b><small>၁ တွဲ</small></div></div>' +
+        '<div class="rank-item"><div class="rank-badge">1</div><div class="rank-info"><b>High Card</b><small>အမြင့်ဆုံးဖဲ</small></div></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="rules-panel" id="rulePanel-rake">' +
+      '<div class="rake-demo">' +
+        '<div class="rd-title">💼 ဒိုင်ဝင်ငွေ · Dealer Rake</div>' +
+        '<div class="rd-calc"><span>👤 Player တစ်ဦးချင်း</span><b>' + fmt(S.settings.rakePerHand) + ' 🪙</b></div>' +
+        '<div class="rd-calc"><span>👥 4 players × 50</span><b>200 🪙</b></div>' +
+        '<div class="rd-calc"><span>🎯 ပွဲ တစ်ပွဲ</span><b>200 🪙 / hand</b></div>' +
+      '</div>' +
+      '<div class="info-steps" style="border-left-color:#22c55e"><b style="color:#22c55e">💰 Rake အလုပ်လုပ်ပုံ</b><br>• ပွဲတိုင်း Player တစ်ဦးချင်းမှ <b>' + fmt(S.settings.rakePerHand) + ' Coin</b> ကောက်ခံ<br>• ကျန်တာ Winner ရမည် · Admin ဝင်ငွေ</div>' +
+      '<div class="info-steps" style="border-left-color:#fbbf24"><b style="color:#fbbf24">🎮 Demo ပွဲ</b><br>Demo ဆော့သောအခါ <b>Rake လုံးဝ မကောက်ခံပါ</b></div>' +
+    '</div>' +
+    '<div class="rules-panel" id="rulePanel-rules">' +
+      '<div class="info-steps" style="border-left-color:#ef4444"><b style="color:#ef4444">🚫 ထွက်ခွါခြင်း</b><br>• <b>ကစားပွဲ မပြီးခင် ထွက်ခွါမရပါ</b><br>• ✕ ကို နှိပ်လျှင် ကြိုတင်ထွက်ရန် အစီအစဉ်သာ သတ်မှတ်နိုင်သည်<br>• ပွဲပြီးမှ Auto ထွက်မည်</div>' +
+      '<div class="info-steps" style="border-left-color:#f59e0b"><b style="color:#f59e0b">⏱ ပွဲပြီး 30 စက္ကန့်</b><br>• ပွဲတစ်ပွဲ ပြီးတိုင်း <b>30 စက္ကန့်</b> အနားရမည်<br>• 30 စက္ကန့် ပြည့်ရင် <b>Auto ဖယ်ရှားခံရမည်</b></div>' +
+      '<div class="info-steps" style="border-left-color:#22c55e"><b style="color:#22c55e">👥 ကစားသမား အနည်းဆုံး 2 ဦး</b><br>• Table တွင် 2 ဦးရှိလျှင် ဆော့နိုင်သည်<br>• Table ဖန်တီးသူ လိုလျှင် <b>Lock</b> လုပ်နိုင်သည်</div>' +
+      '<div class="info-steps" style="border-left-color:#06b6d4"><b style="color:#06b6d4">😊 Emote / Interact / Chat</b><br>• 🎁 Free: 5 Basic + 8 Interact<br>• 🛒 Emote Pack: လစဉ်ကြေး (100-10,000 🪙)<br>• 💬 Chat Box: အခမဲ့</div>' +
+    '</div>'
+  );
+}
+
+function showRuleTab(tab, e){
+  if(e) e.preventDefault();
+  document.querySelectorAll('.rules-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.rules-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('rulePanel-' + tab).classList.add('active');
+  if(e && e.target) e.target.classList.add('active');
+}
+
+function openWallet(){
+  var u = S.users[S.current];
+  var buys = S.buyRequests.filter(function(r){ return r.userId === u.id && r.status === 'approved'; });
+  var wds = S.withdrawRequests.filter(function(r){ return r.userId === u.id && r.status === 'approved'; });
+  var totalBought = buys.reduce(function(s, r){ return s + r.coins; }, 0);
+  var totalWithdrawn = wds.reduce(function(s, r){ return s + r.amount; }, 0);
+  var emotePurchases = S.emotePurchases.filter(function(p){ return p.userId === u.id; });
+  var emoteTotal = emotePurchases.reduce(function(s, p){ return s + p.price; }, 0);
+
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>💼</span><div><span>Wallet</span><span class="bi-en">ပိုက်ဆံအိတ်</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="info-steps" style="border-left-color:#ffd700">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><b style="color:#a7f3d0">လက်ကျန်</b>' +
+        '<span style="font-size:20px;color:#ffd54a;font-weight:900">' + fmt(u.coins) + ' 🪙</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px"><span>📥 Bought</span><span style="color:#22c55e;font-weight:900">' + fmt(totalBought) + ' 🪙</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px"><span>📤 Withdrawn</span><span style="color:#f97316;font-weight:900">' + fmt(totalWithdrawn) + ' 🪙</span></div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:11px"><span>😊 Emote Spend</span><span style="color:#fbbf24;font-weight:900">' + fmt(emoteTotal) + ' 🪙</span></div>' +
+    '</div>' +
+    '<div class="info-steps" style="border-left-color:#fbbf24">' +
+      '<div style="display:flex;justify-content:space-between;font-size:11px"><span>🎮 Demo Coin</span><span style="color:#fbbf24;font-weight:900">' + fmt(DEMO_START) + ' 🎮</span></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+      '<button class="form-btn green" onclick="closeModal();openBuyCoins()"><span>🪙 Coin ဝယ်</span><span class="bi-en">Buy</span></button>' +
+      '<button class="form-btn gold" onclick="closeModal();openWithdraw()"><span>💸 Coin ထုတ်</span><span class="bi-en">Withdraw</span></button>' +
+    '</div>' +
+    '<button class="form-btn blue" style="margin-top:8px" onclick="closeModal();openEmoteShop()"><span>😊 Emote ဆိုင်</span><span class="bi-en">Emote Shop</span></button>'
+  );
+}
+
+function openBuyCoins(){
+  var s = S.settings;
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>🪙</span><div><span>Coin ဝယ်ယူရန်</span><span class="bi-en">Buy Coins</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="wave-box"><div class="wl">📱 WAVE PAY</div><div class="wn">' + esc(s.waveNumber) + '</div>' +
+      '<div class="wa">' + esc(s.waveName) + '</div>' +
+      '<button class="wcp" onclick="copyText(\'' + esc(s.waveNumber) + '\')">📋 Copy</button></div>' +
+    '<div class="info-steps">1️⃣ Wave Pay ဖွင့်ပါ<br>2️⃣ <b>' + esc(s.waveNumber) + '</b> သို့ လွဲပါ<br>3️⃣ Code (6 digits) ရယူပါ<br>4️⃣ ဖြည့်ပါ<br>5️⃣ Admin 24hr အတွင်း အတည်ပြုမည်</div>' +
+    '<div class="warn-box">⚠️ အနည်းဆုံး 5,000 ကျပ် · 1:1 rate</div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">ငွေလွဲပမာဏ</span><span class="bi-en">Amount</span></div>' +
+      '<select class="form-input" id="buyAmt">' +
+        '<option value="5000">5,000 → 5,000 🪙</option>' +
+        '<option value="10000">10,000 → 10,000 🪙</option>' +
+        '<option value="20000">20,000 → 20,000 🪙</option>' +
+        '<option value="50000">50,000 → 50,000 🪙</option>' +
+        '<option value="100000">100,000 → 100,000 🪙</option>' +
+      '</select></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">Code အနောက်ဆုံး 6 လုံး</span><span class="bi-en">Last 6 digits</span></div>' +
+      '<input class="form-input mono" id="buyCode" maxlength="6" inputmode="numeric" placeholder="123456"></div>' +
+    '<button class="form-btn green" onclick="submitBuyRequest()"><span>✅ ပေးပို့</span><span class="bi-en">Submit</span></button>' +
+    '<div style="margin-top:14px"><div style="font-size:11px;font-weight:900;color:#ffd54a;margin-bottom:8px">📜 သင့် တောင်းဆိုမှုများ</div>' +
+      '<div class="list-scroll" id="myBuyReqs" style="max-height:140px"></div></div>'
+  );
+  renderMyBuyReqs();
+}
+function copyText(txt){
+  try{ navigator.clipboard.writeText(txt); toast('📋 Copied · ' + txt); }
+  catch(e){
+    var t = document.createElement('input');
+    t.value = txt; document.body.appendChild(t); t.select();
+    document.execCommand('copy'); document.body.removeChild(t);
+    toast('📋 Copied · ' + txt);
+  }
+}
+function submitBuyRequest(){
+  var amount = parseInt($('buyAmt').value, 10);
+  var code = $('buyCode').value.trim();
+  if(!amount || amount < 5000){ toast('⚠️ အနည်းဆုံး 5,000'); return; }
+  if(!/^\d{6}$/.test(code)){ toast('⚠️ 6 လုံး'); return; }
+  var user = S.users[S.current];
+  S.buyRequests.unshift({ id: genId('B'), userId: user.id, username: user.name, amountKyat: amount, coins: amount, code: code, phone: user.phone, status: 'pending', createdAt: Date.now() });
+  saveState();
+  $('buyCode').value = '';
+  renderMyBuyReqs();
+  toast('✅ ပေးပို့ပြီး');
+}
+function renderMyBuyReqs(){
+  var user = S.users[S.current];
+  if(!user) return;
+  var mine = S.buyRequests.filter(function(r){ return r.userId === user.id; });
+  var box = $('myBuyReqs');
+  if(!box) return;
+  if(!mine.length){ box.innerHTML = '<p style="font-size:11px;color:#6b8f7e;text-align:center;padding:10px;font-style:italic">မရှိသေးပါ</p>'; return; }
+  var html = '';
+  for(var i = 0; i < Math.min(mine.length, 6); i++){
+    var r = mine[i];
+    var st = { pending: '⏳', approved: '✅', rejected: '❌' }[r.status];
+    var cls = r.status === 'approved' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending';
+    html += '<div class="list-item ' + cls + '"><div class="li-row"><span>' + fmt(r.amountKyat) + ' → ' + fmt(r.coins) + ' 🪙</span><span>' + st + '</span></div>' +
+      '<div class="li-meta">Code: <b style="color:#ffd54a">' + esc(r.code) + '</b></div></div>';
+  }
+  box.innerHTML = html;
+}
+function openWithdraw(){
+  var user = S.users[S.current];
+  var s = S.settings;
+  var can = user.coins >= s.minWithdraw;
+  var html = '<div class="modal-head"><div class="modal-title"><span>💸</span><div><span>Coin ထုတ်ယူရန်</span><span class="bi-en">Withdraw</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="info-steps">💰 Balance: <b style="color:#ffd54a">' + fmt(user.coins) + ' 🪙</b><br>📉 Min: <b>' + fmt(s.minWithdraw) + ' 🪙</b></div>';
+  if(!can){
+    html += '<div class="warn-box">⚠️ Coin မလုံလောက်ပါ</div><button class="form-btn red" onclick="closeModal()">← ပိတ်</button>';
+    openModal(html); return;
+  }
+  html += '<div class="warn-box">⚠️ Wave Pay သို့ 24 နာရီအတွင်း လွဲပေးမည်</div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">ထုတ်ယူပမာဏ</span><span class="bi-en">Amount</span></div>' +
+      '<input class="form-input mono" id="wdAmount" type="number" min="' + s.minWithdraw + '" max="' + user.coins + '" placeholder="' + s.minWithdraw + '"></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">Wave Pay ဖုန်း</span><span class="bi-en">Wave Number</span></div>' +
+      '<input class="form-input mono" id="wdNumber" maxlength="11" value="' + esc(user.phone) + '"></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">အကောင့်အမည်</span><span class="bi-en">Wave Name</span></div>' +
+      '<input class="form-input" id="wdName" maxlength="40" value="' + esc(user.name) + '"></div>' +
+    '<button class="form-btn gold" onclick="submitWithdraw()"><span>📤 ပေးပို့</span><span class="bi-en">Submit</span></button>' +
+    '<div style="margin-top:14px"><div style="font-size:11px;font-weight:900;color:#ffd54a;margin-bottom:8px">📜 သင့် ထုတ်ယူမှု</div>' +
+      '<div class="list-scroll" id="myWdReqs" style="max-height:140px"></div></div>';
+  openModal(html);
+  renderMyWdReqs();
+}
+function submitWithdraw(){
+  var user = S.users[S.current];
+  var s = S.settings;
+  var amount = parseInt($('wdAmount').value, 10);
+  var num = $('wdNumber').value.trim();
+  var nm = $('wdName').value.trim();
+  if(!amount || amount < s.minWithdraw){ toast('⚠️ အနည်းဆုံး ' + fmt(s.minWithdraw)); return; }
+  if(amount > user.coins){ toast('⚠️ Coin မလုံလောက်'); return; }
+  if(!num || num.length < 7){ toast('⚠️ Wave number'); return; }
+  if(!nm){ toast('⚠️ Wave name'); return; }
+  user.coins -= amount;
+  S.withdrawRequests.unshift({ id: genId('W'), userId: user.id, username: user.name, amount: amount, waveNumber: num, waveName: nm, status: 'pending', createdAt: Date.now() });
+  saveState();
+  $('wdAmount').value = '';
+  renderMyWdReqs();
+  $('uCoins').textContent = fmt(user.coins);
+  $('headerCoins').textContent = fmt(user.coins);
+  toast('✅ ပေးပို့ပြီး');
+}
+function renderMyWdReqs(){
+  var user = S.users[S.current];
+  if(!user) return;
+  var mine = S.withdrawRequests.filter(function(r){ return r.userId === user.id; });
+  var box = $('myWdReqs');
+  if(!box) return;
+  if(!mine.length){ box.innerHTML = '<p style="font-size:11px;color:#6b8f7e;text-align:center;padding:10px;font-style:italic">မရှိသေးပါ</p>'; return; }
+  var html = '';
+  for(var i = 0; i < Math.min(mine.length, 6); i++){
+    var r = mine[i];
+    var st = { pending: '⏳', approved: '✅', rejected: '❌' }[r.status];
+    var cls = r.status === 'approved' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending';
+    html += '<div class="list-item ' + cls + '"><div class="li-row"><span>' + fmt(r.amount) + ' 🪙</span><span>' + st + '</span></div>' +
+      '<div class="li-meta">📱 ' + esc(r.waveNumber) + ' · ' + esc(r.waveName) + '</div></div>';
+  }
+  box.innerHTML = html;
+}
+function openProfile(){
+  var u = S.users[S.current];
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>👤</span><div><span>Profile</span><span class="bi-en">ကိုယ်ရေး</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="info-steps">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><b style="color:#ffd54a">အမည်</b><span>' + esc(u.name) + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><b style="color:#ffd54a">ဖုန်း</b><span>' + esc(u.phone) + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><b style="color:#ffd54a">Real Coins</b><span style="color:#22c55e;font-weight:900">' + fmt(u.coins) + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><b style="color:#ffd54a">Demo Coins</b><span style="color:#fbbf24;font-weight:900">🎮 ' + fmt(DEMO_START) + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px"><b style="color:#ffd54a">Games</b><span>' + u.games + '</span></div>' +
+      '<div style="display:flex;justify-content:space-between"><b style="color:#ffd54a">W/L</b><span>' + u.wins + ' / ' + u.losses + '</span></div>' +
+    '</div>'
+  );
+}
+function openHistory(){
+  var user = S.users[S.current];
+  var hist = S.gameHistory.filter(function(h){ return h.userId === user.id; });
+  var html = '<div class="modal-head"><div class="modal-title"><span>📜</span><div><span>ပွဲ မှတ်တမ်း</span><span class="bi-en">History</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+  if(!hist.length){ html += '<p style="text-align:center;padding:20px;color:#6b8f7e;font-style:italic;font-size:12px">မရှိသေးပါ</p>'; }
+  else {
+    html += '<div class="list-scroll">';
+    for(var i = 0; i < Math.min(hist.length, 30); i++){
+      var h = hist[i];
+      var cls = h.result === 'WIN' ? 'approved' : 'rejected';
+      html += '<div class="list-item ' + cls + '"><div class="li-row"><span>Hand #' + h.hand + '</span><span style="color:' + (h.result === 'WIN' ? '#22c55e' : '#ef4444') + '">' + h.result + '</span></div>' +
+        '<div class="li-meta">Pot: ' + fmt(h.pot) + ' 🪙 · Rake: ' + fmt(h.rake) + ' 🪙</div>' +
+        '<div class="li-meta">' + new Date(h.time).toLocaleString() + '</div></div>';
+    }
+    html += '</div>';
+  }
+  openModal(html);
+}
+
+function adminUsersList(){
+  var users = Object.values(S.users);
+  var html = '<div class="modal-head"><div class="modal-title"><span>👥</span><div><span>User List</span><span class="bi-en">အသုံးပြုသူစာရင်း</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+  if(!users.length){ html += '<p style="text-align:center;padding:20px;color:#6b8f7e">No users yet</p>'; }
+  else {
+    html += '<div class="list-scroll">';
+    for(var i = 0; i < users.length; i++){
+      var u = users[i];
+      html += '<div class="list-item"><div class="li-row"><span>👤 ' + esc(u.name) + '</span><span style="color:#ffd54a">' + fmt(u.coins) + ' 🪙</span></div>' +
+        '<div class="li-meta">📱 ' + esc(u.phone) + ' · Games: ' + u.games + ' · W/L: ' + u.wins + '/' + u.losses + '</div>' +
+        '<div class="li-actions"><button class="mini-btn green" onclick="adminGrantCoins(\'' + u.id + '\', 1000)">+1,000</button>' +
+        '<button class="mini-btn red" onclick="adminGrantCoins(\'' + u.id + '\', -1000)">-1,000</button></div></div>';
+    }
+    html += '</div>';
+  }
+  openModal(html);
+}
+function adminGrantCoins(userId, amount){
+  var u = S.users[userId];
+  if(!u) return;
+  u.coins = Math.max(0, (u.coins || 0) + amount);
+  saveState();
+  refreshAdminStats();
+  adminUsersList();
+  toast((amount > 0 ? '+' : '') + fmt(amount));
+}
+function adminBuyRequests(){
+  var all = S.buyRequests.slice(0, 50);
+  var html = '<div class="modal-head"><div class="modal-title"><span>🪙</span><div><span>Buy Requests</span><span class="bi-en">Coin ဝယ်မှု</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+  if(!all.length){ html += '<p style="text-align:center;padding:20px;color:#6b8f7e">No requests</p>'; }
+  else {
+    html += '<div class="list-scroll">';
+    for(var i = 0; i < all.length; i++){
+      var r = all[i];
+      var cls = r.status === 'approved' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending';
+      html += '<div class="list-item ' + cls + '"><div class="li-row"><span>👤 ' + esc(r.username) + '</span><span style="color:#ffd54a">' + fmt(r.coins) + ' 🪙</span></div>' +
+        '<div class="li-meta">💰 ' + fmt(r.amountKyat) + ' · Code: <b style="color:#ffd54a">' + esc(r.code) + '</b></div>';
+      if(r.status === 'pending'){
+        html += '<div class="li-actions"><button class="mini-btn green" onclick="approveBuy(\'' + r.id + '\')">✅</button>' +
+          '<button class="mini-btn red" onclick="rejectBuy(\'' + r.id + '\')">❌</button></div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  openModal(html);
+}
+function approveBuy(id){
+  var r = S.buyRequests.find(function(x){ return x.id === id; });
+  if(!r || r.status !== 'pending') return;
+  var u = S.users[r.userId];
+  if(!u){ toast('User not found'); return; }
+  u.coins = (u.coins || 0) + r.coins;
+  r.status = 'approved';
+  saveState(); refreshAdminStats(); adminBuyRequests();
+  toast('✅ +' + fmt(r.coins) + ' Coin');
+}
+function rejectBuy(id){
+  if(!confirm('Reject?')) return;
+  var r = S.buyRequests.find(function(x){ return x.id === id; });
+  if(!r) return;
+  r.status = 'rejected';
+  saveState(); refreshAdminStats(); adminBuyRequests();
+  toast('❌ Rejected');
+}
+function adminWithdrawRequests(){
+  var all = S.withdrawRequests.slice(0, 50);
+  var html = '<div class="modal-head"><div class="modal-title"><span>💸</span><div><span>Withdraw Requests</span><span class="bi-en">Coin ထုတ်မှု</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+  if(!all.length){ html += '<p style="text-align:center;padding:20px;color:#6b8f7e">No requests</p>'; }
+  else {
+    html += '<div class="list-scroll">';
+    for(var i = 0; i < all.length; i++){
+      var r = all[i];
+      var cls = r.status === 'approved' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'pending';
+      html += '<div class="list-item ' + cls + '"><div class="li-row"><span>👤 ' + esc(r.username) + '</span><span style="color:#ffd54a">' + fmt(r.amount) + ' 🪙</span></div>' +
+        '<div class="li-meta">📱 ' + esc(r.waveNumber) + ' · ' + esc(r.waveName) + '</div>';
+      if(r.status === 'pending'){
+        html += '<div class="li-actions"><button class="mini-btn green" onclick="approveWithdraw(\'' + r.id + '\')">✅</button>' +
+          '<button class="mini-btn red" onclick="rejectWithdraw(\'' + r.id + '\')">❌</button></div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  openModal(html);
+}
+function approveWithdraw(id){
+  var r = S.withdrawRequests.find(function(x){ return x.id === id; });
+  if(!r || r.status !== 'pending') return;
+  r.status = 'approved';
+  saveState(); refreshAdminStats(); adminWithdrawRequests();
+  toast('✅ Sent');
+}
+function rejectWithdraw(id){
+  if(!confirm('Reject and refund?')) return;
+  var r = S.withdrawRequests.find(function(x){ return x.id === id; });
+  if(!r) return;
+  var u = S.users[r.userId];
+  if(u) u.coins = (u.coins || 0) + r.amount;
+  r.status = 'rejected';
+  saveState(); refreshAdminStats(); adminWithdrawRequests();
+  toast('❌ Refunded');
+}
+function adminSalesStats(){
+  var totalRake = S.rakeIncome.reduce(function(s, r){ return s + r.amount; }, 0);
+  var buyRev = S.buyRequests.filter(function(r){ return r.status === 'approved'; }).reduce(function(s, r){ return s + r.amountKyat; }, 0);
+  var wdPaid = S.withdrawRequests.filter(function(r){ return r.status === 'approved'; }).reduce(function(s, r){ return s + r.amount; }, 0);
+  var emoteIncome = S.emotePurchases.reduce(function(s, p){ return s + p.price; }, 0);
+  var games = S.gameHistory.length;
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>📊</span><div><span>Income Report</span><span class="bi-en">ဝင်ငွေ</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="info-steps" style="border-left-color:#22c55e">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>💰 Coin Sales</b><span style="color:#22c55e;font-weight:900">' + fmt(buyRev) + ' ကျပ်</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>💼 Rake Income</b><span style="color:#22c55e;font-weight:900">' + fmt(totalRake) + ' 🪙</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>😊 Emote Sales</b><span style="color:#fbbf24;font-weight:900">' + fmt(emoteIncome) + ' 🪙</span></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>💸 Withdraw Paid</b><span style="color:#f97316;font-weight:900">' + fmt(wdPaid) + ' 🪙</span></div>' +
+      '<div style="display:flex;justify-content:space-between"><b>🎮 Games</b><span>' + fmt(games) + '</span></div>' +
+    '</div>' +
+    '<div class="info-steps" style="border-left-color:#ffd700">' +
+      '<b style="color:#ffd54a">📈 Net Profit</b><br>' +
+      '<div style="font-size:22px;font-weight:900;color:#ffd54a;margin-top:6px">' + fmt(buyRev - wdPaid) + ' ကျပ် + ' + fmt(totalRake + emoteIncome) + ' 🪙</div>' +
+    '</div>'
+  );
+}
+function adminGameHistory(){
+  var hist = S.gameHistory.slice(0, 50);
+  var html = '<div class="modal-head"><div class="modal-title"><span>📜</span><div><span>Game History</span><span class="bi-en">ပွဲ သမိုင်း</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+  if(!hist.length){ html += '<p style="text-align:center;padding:20px;color:#6b8f7e">Empty</p>'; }
+  else {
+    html += '<div class="list-scroll">';
+    for(var i = 0; i < hist.length; i++){
+      var h = hist[i];
+      var cls = h.result === 'WIN' ? 'approved' : 'rejected';
+      html += '<div class="list-item ' + cls + '"><div class="li-row"><span>#' + h.hand + ' · ' + esc(h.username) + '</span><span style="color:' + (h.result === 'WIN' ? '#22c55e' : '#ef4444') + '">' + h.result + '</span></div>' +
+        '<div class="li-meta">Pot: ' + fmt(h.pot) + ' · Rake: ' + fmt(h.rake) + '</div>' +
+        '<div class="li-meta">' + new Date(h.time).toLocaleString() + '</div></div>';
+    }
+    html += '</div>';
+  }
+  openModal(html);
+}
+function adminEmoteSales(){
+  var now = Date.now();
+  var all = S.emotePurchases.slice().reverse();
+  var html = '<div class="modal-head"><div class="modal-title"><span>😊</span><div><span>Emote Sales</span><span class="bi-en">Emote ရောင်းအား</span></div></div>' +
+    '<button class="modal-close" onclick="closeModal()">✕</button></div>';
+  var total = all.reduce(function(s,p){ return s + p.price; }, 0);
+  html += '<div class="info-steps" style="border-left-color:#fbbf24">' +
+    '<div style="display:flex;justify-content:space-between"><b>📦 Total Packs Sold</b><span style="color:#fbbf24;font-weight:900">' + all.length + '</span></div>' +
+    '<div style="display:flex;justify-content:space-between;margin-top:6px"><b>💰 Total Revenue</b><span style="color:#22c55e;font-weight:900">' + fmt(total) + ' 🪙</span></div></div>';
+  if(!all.length){ html += '<p style="text-align:center;padding:20px;color:#6b8f7e">No emote sales yet</p>'; }
+  else {
+    html += '<div class="list-scroll">';
+    for(var i = 0; i < Math.min(all.length, 50); i++){
+      var p = all[i];
+      var isActive = p.expiresAt > now;
+      var cls = isActive ? 'approved' : 'rejected';
+      html += '<div class="list-item ' + cls + '">' +
+        '<div class="li-row"><span>👤 ' + esc(p.username) + '</span><span style="color:#fbbf24">' + fmt(p.price) + ' 🪙</span></div>' +
+        '<div class="li-meta">📦 ' + esc(p.packName) + ' Pack · ' + (isActive ? '✅ Active' : '❌ Expired') + '</div>' +
+        '<div class="li-meta">📅 ' + new Date(p.purchasedAt).toLocaleDateString() + ' → ' + new Date(p.expiresAt).toLocaleDateString() + '</div></div>';
+    }
+    html += '</div>';
+  }
+  openModal(html);
+}
+function adminSettings(){
+  var s = S.settings;
+  openModal(
+    '<div class="modal-head"><div class="modal-title"><span>⚙️</span><div><span>Settings</span><span class="bi-en">ဆက်တင်</span></div></div>' +
+      '<button class="modal-close" onclick="closeModal()">✕</button></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">Wave Pay</span><span class="bi-en">Wave Number</span></div>' +
+      '<input class="form-input mono" id="setWaveNum" maxlength="11" value="' + esc(s.waveNumber) + '"></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">Wave အမည်</span><span class="bi-en">Wave Name</span></div>' +
+      '<input class="form-input" id="setWaveName" maxlength="40" value="' + esc(s.waveName) + '"></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">Rake (per player/hand)</span><span class="bi-en">Dealer rake</span></div>' +
+      '<input class="form-input mono" id="setRake" type="number" value="' + s.rakePerHand + '"></div>' +
+    '<div class="form-group"><div class="label-bi"><span class="bi-my">Min Withdraw</span><span class="bi-en">Minimum</span></div>' +
+      '<input class="form-input mono" id="setMinWd" type="number" value="' + s.minWithdraw + '"></div>' +
+    '<button class="form-btn green" onclick="saveSettings()"><span>💾 သိမ်း</span><span class="bi-en">Save</span></button>'
+  );
+}
+function saveSettings(){
+  S.settings.waveNumber = $('setWaveNum').value.trim() || DEFAULT_SETTINGS.waveNumber;
+  S.settings.waveName = $('setWaveName').value.trim() || DEFAULT_SETTINGS.waveName;
+  S.settings.rakePerHand = parseInt($('setRake').value, 10) || DEFAULT_SETTINGS.rakePerHand;
+  S.settings.minWithdraw = parseInt($('setMinWd').value, 10) || DEFAULT_SETTINGS.minWithdraw;
+  saveState();
+  closeModal();
+  toast('💾 Saved');
+}
+
+function updateOnline(){ $('onlineCount').textContent = 12 + Math.floor(Math.random() * 40); }
+
+function tryLock(){
+  try{
+    var el = document.documentElement;
+    if(el.requestFullscreen){
+      el.requestFullscreen({ navigationUI: 'hide' }).then(function(){
+        if(screen.orientation && screen.orientation.lock){
+          screen.orientation.lock('landscape').catch(function(){});
+        }
+      }).catch(function(){});
+    }
+  }catch(e){}
+}
+var _lockDone = false;
+function firstTap(){
+  if(_lockDone) return;
+  _lockDone = true;
+  tryLock();
+  document.removeEventListener('click', firstTap);
+  document.removeEventListener('touchstart', firstTap);
+}
+
+window.addEventListener('load', function(){
+  loadState();
+  document.addEventListener('click', firstTap, { passive: true });
+  document.addEventListener('touchstart', firstTap, { passive: true });
+
+  if(S.current && S.current !== 'admin' && S.users[S.current]){
+    showUserDashboard();
+  } else if(S.current === 'admin'){
+    showAdminDashboard();
+  } else {
+    showScreen('screenHome');
+  }
+  updateOnline();
+  setInterval(updateOnline, 5000);
+  window.addEventListener('beforeunload', saveState);
+});
+</script>
+</body>
+</html>
